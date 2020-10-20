@@ -284,7 +284,7 @@ class CustomerViewsTests(TestCase):
         create_test_user(cls)
         cls.client = Client()
         cls.CUSTOMER_DATA = {
-            'name': 'Org',
+            'customer_name': 'Org',
             'billing_address': 'Test Address',
             'banking_details': 'Test Details',
             'customer_type': 'organization',
@@ -308,12 +308,13 @@ class CustomerViewsTests(TestCase):
     def test_post_customer_create_page_individual(self):
         new_data = copy.deepcopy(self.CUSTOMER_DATA)
         new_data.update({
-            'name': 'cust omer',
+            'customer_name': 'cust omer',
             'customer_type': 'individual'
         })
         resp = self.client.post(
             reverse('invoicing:create-customer'),
             data=new_data)
+        
         self.assertEqual(resp.status_code, 302)
 
     def test_post_customer_create_page(self):
@@ -321,7 +322,6 @@ class CustomerViewsTests(TestCase):
             reverse('invoicing:create-customer'),
             data=self.CUSTOMER_DATA)
 
-        
         self.assertEqual(resp.status_code, 302)
 
     def test_get_update_customer_page(self):
@@ -340,51 +340,10 @@ class CustomerViewsTests(TestCase):
                         'pk': self.customer_org.pk
                     }), data=self.CUSTOMER_DATA,
         )
+
         self.assertEqual(resp.status_code, 302)
 
-    def test_post_update_customer_ind_no_change_page(self):
-        resp = self.client.post(
-            reverse('invoicing:update-customer',
-                    kwargs={
-                        'pk': self.customer_ind.pk
-                    }), data={
-            'name': 'Org man',
-            'billing_address': 'Test Address',
-            'banking_details': 'Test Details',
-            'customer_type': 'individual',
-            'billing_currency': 1
-        })
-
-        
-        self.assertEqual(resp.status_code, 302)
-
-    def test_post_customer_update_page_switch_to_org(self):
-        resp = self.client.post(
-            reverse('invoicing:update-customer',
-                    kwargs={
-                        'pk': self.customer_ind.pk
-                    }), data=self.CUSTOMER_DATA,
-        )
-        self.assertEqual(resp.status_code, 302)
-
-        # create ind customer again
-        InvoicingModelCreator(self).create_customer_ind()
-
-    def test_post_customer_update_page_switch_to_ind(self):
-        new_data = copy.deepcopy(self.CUSTOMER_DATA)
-        new_data.update({
-            'name': 'cust omer',
-                    'customer_type': 'individual'
-        })
-        resp = self.client.post(
-            reverse('invoicing:update-customer',
-                    kwargs={
-                        'pk': self.customer_org.pk
-                    }), data=new_data,
-        )
-        self.assertEqual(resp.status_code, 302)
-        # revert
-        InvoicingModelCreator(self).create_customer_org()
+   
 
     def test_get_delete_customer_page(self):
         resp = self.client.get(reverse('invoicing:delete-customer',
@@ -917,7 +876,7 @@ class ConfigWizardTests(TestCase):
         customer_data = {
             'config_wizard-current_step': 1,
             '1-customer_type': 'individual',
-            '1-name': 'some one'
+            '1-customer_name': 'some one'
         }
 
         employee_data = {

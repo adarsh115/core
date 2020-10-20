@@ -48,18 +48,6 @@ class CustomerModelTests(TestCase):
         obj = Customer.objects.filter(organization__isnull=False).first()
         self.assertIsInstance(obj, Customer)
 
-    def test_customer_email(self):
-        self.assertIsInstance(self.customer_org.customer_email, str)
-        self.assertIsInstance(self.customer_ind.customer_email, str)
-
-    def test_customer_name(self):
-        self.assertIsInstance(self.customer_ind.name, str)
-        self.assertIsInstance(self.customer_org.name, str)
-
-    def test_customer_type(self):
-        self.assertTrue(self.customer_org.is_organization)
-        self.assertFalse(self.customer_ind.is_organization)
-
     def test_customer_account(self):
         self.assertIsInstance(self.customer_org.account, Account)
 

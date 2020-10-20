@@ -9,8 +9,8 @@ class CustomerFilter(django_filters.FilterSet):
     class Meta:
         model = models.Customer
         fields = {
-            'organization__legal_name': ['icontains'],
-            'individual__last_name': ['icontains'],
+            'customer_name': ['icontains'],
+            'customer_type': ['icontains'],
 
         }
 

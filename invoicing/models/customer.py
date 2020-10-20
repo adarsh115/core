@@ -16,6 +16,10 @@ class CustomerNote(models.Model):
     author = models.CharField(max_length=255)
     timestamp = models.DateTimeField(auto_now=True)
 
+CUSTOMER_TYPE_CHOICES = [
+    ('organization', 'Organization'), 
+    ('individual', 'Individual')
+]
 
 class Customer(SoftDeletionModel, QuickEntry):
     '''The customer model represents business clients to whom products are 
@@ -23,15 +27,24 @@ class Customer(SoftDeletionModel, QuickEntry):
     likelihood. Individuals however can also be represented.
     Customers can have accounts if store credit is extended to them.'''
     # make sure it can only be one or the other not both
-    quick_entry_fields = ["is_company", "customer_name"]
-    is_company = models.BooleanField(default=False)
-    customer_name = models.CharField(max_length=255, blank=True, null=True)
+    quick_entry_fields = ["customer_type", "customer_name"]
+    customer_type = models.CharField(max_length=255, choices=CUSTOMER_TYPE_CHOICES, default='individual')
+    customer_name = models.CharField(max_length=255, blank=True, default="")
     organization = models.OneToOneField('common_data.Organization', null=True,
                                         on_delete=models.CASCADE, blank=True, unique=True)
     individual = models.OneToOneField('common_data.Individual', null=True,
                                       on_delete=models.CASCADE, blank=True,)
+    phone_1 = models.CharField(max_length = 255,default="", blank=True)
+    phone_2 = models.CharField(max_length = 255, default="",blank=True)
+    tax_id = models.CharField(max_length = 255, default="",blank=True)
+    email = models.CharField(max_length = 255, default="",blank=True)
+    website = models.CharField(max_length = 255, default="",blank=True)
+    physical_address = models.TextField(default="",blank=True)
+    photo = models.ImageField(null=True, blank=True) 
+    logo = models.ImageField(null=True, blank=True)
     billing_address = models.TextField(default="", blank=True)
     banking_details = models.TextField(default="", blank=True)
+    other_details = models.TextField(default="", blank=True)
     billing_currency = models.ForeignKey('accounting.Currency', null=True,
         on_delete=models.SET_NULL)
     account = models.ForeignKey('accounting.Account', on_delete=models.CASCADE,
@@ -43,38 +56,13 @@ class Customer(SoftDeletionModel, QuickEntry):
     def invoices(self):
         return Invoice.objects.filter(customer=self, draft=False, status__in=['invoice', 'paid', 'paid-partially'])
 
-    @property
-    def name(self):
-        if self.organization:
-            return self.organization.legal_name
-        else:
-            return str(self.individual)
-
-    @property
-    def customer_phone(self):
-        if self.is_organization:
-            return self.organization.phone
-        else:
-            return self.individual.phone
-
-    @property
-    def customer_email(self):
-        if self.is_organization:
-            return self.organization.email
-        else:
-            return self.individual.email
-
-    @property
-    def is_organization(self):
-        return self.organization != None
-
     def __str__(self):
-        return self.name
+        return self.customer_name
 
     def create_customer_account(self):
         n_customers = Customer.objects.all().count() + 1
         self.account = Account.objects.create(
-            name="Customer: %s" % self.name,
+            name="Customer: %s" % self.customer_name,
             balance=0,
             id=1100 + n_customers,
             type='asset',
@@ -87,13 +75,6 @@ class Customer(SoftDeletionModel, QuickEntry):
     def credit_invoices(self):
         return [i for i in self.invoices
                 if i.status in ('invoice', 'paid-partially')]
-
-    @property
-    def address(self):
-        if self.is_organization:
-            return self.organization.business_address
-
-        return self.individual.address
 
     @property
     def last_transaction_date(self):
@@ -170,19 +151,27 @@ class Customer(SoftDeletionModel, QuickEntry):
 
     def save(self, *args, **kwargs):
         if not self.pk and self.customer_name:
-            if self.is_company and not self.organization:
-                self.organization = Organization.objects.create(legal_name = self.customer_name)
-            
-            if not self.is_company and not self.individual:
-                names = self.customer_name.split("")
-                if len(names) < 2:
-                    first = self.customer_name
-                    last = "Customer"
-                else:
-                    first, last = names[:2]
-                self.individual = Individual.objects.create(first_name=first,
-                    last_name=last)
-
+            if self.customer_type == 'individual':
+                # name validated in form
+                first, last = self.customer_name.split(' ')
+                self.individual = Individual.objects.create(
+                    first_name=first,
+                    last_name=last,
+                    email=self.email,
+                    phone=self.phone_1,
+                    other_details=self.other_details,
+                    photo=self.photo,
+                    phone_two=self.phone_2
+                )
+            else:
+                self.organization = Organization.objects.create(
+                    legal_name=self.customer_name,
+                    business_address=self.physical_address,
+                    website=self.website,
+                    email=self.email,
+                    phone=self.phone_1,
+                    logo=self.logo
+                )
         if self.account is None:
             self.create_customer_account()
 

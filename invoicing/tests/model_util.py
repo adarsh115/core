@@ -33,7 +33,9 @@ class InvoicingModelCreator():
             cmc.create_individual()
 
         self.cls.customer_ind = Customer.objects.create(
-            individual=self.cls.individual
+            individual=self.cls.individual,
+            customer_name="some customer",
+            customer_type='individual'
         )
 
         return self.cls.customer_ind
@@ -47,7 +49,9 @@ class InvoicingModelCreator():
             return self.cls.customer_org
 
         self.cls.customer_org = Customer.objects.create(
-            organization=self.cls.organization
+            organization=self.cls.organization,
+            customer_name="org_customer",
+            customer_type='organization'
         )
 
         return self.cls.customer_org
