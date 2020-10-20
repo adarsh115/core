@@ -1,98 +1,42 @@
-import React, {Component} from 'react';
-import styles from '../container/app.css'
-import SearchableWidget from '../../src/components/searchable_widget'
+import React from 'react'
+import {useState} from 'react'
+import Modal from '../../src/components/modal';
+import SelectThree from '../../src/select_3';
 import axios from '../../src/auth'
-import {setDataPayload} from '../../src/utils'
 
-class CustomersPage extends Component{
-    state = {
-        selected: '',
-        name: '',
-        phone: '',
-        email: '',
-        address: ''
-    }
+const customerModal = (props) => {
+    const [customer, setCustomer] = useState(null)
 
-    createCustomer = () => {
-        if(this.state.name.indexOf(" ") == -1){
-            bentschAlert('A full name, separated by a space is required to create customers')
-            return
-        }
-        axios.defaults.xsrfCookieName = "csrftoken";
-        axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
-        axios({url: '/invoicing/create-customer/', 
-                method: 'POST',
-                data:setDataPayload({
-                    customer_type: 'individual',
-                    name: this.state.name,
-                    address: this.state.address,
-                    phone_1: this.state.phone,
-                    email: this.state.email
-                })}).then(resp => {
-            axios.get('/base/models/get-latest/customer')
-                .then(res =>{
-                    this.props.selectHandler(res.data.data[0] + ' - ' + res.data.data[1])
-                })
-        })
-    } 
-
-    render(){
-        return(
-            <div className={styles.modalCard}>
-                <h1>Customers</h1>
-                <p>Select or create Customers</p>
-                <hr className="my-2"/>
-                <div style={{
-                    marginBottom: '5px',
-                    border:'2px solid #23374d'
-                }}>
-                    <SearchableWidget 
-                        dataURL='/invoicing/api/customer/'
-                        displayField="name"
-                        idField="id"
-                        onSelect={val =>{this.setState({selected: val})}}
-                        onClear={()=>(this.setState({selected:''}))}/>
+    return (
+        <Modal title="Customers"
+                show={props.show}
+                handleClose={props.onClose}>
+            <p>Customer: </p>
+            <SelectThree 
+                app='invoicing'
+                model="customer"
+                onSelect={data => {
+                    axios({
+                        method: 'GET',
+                        url: '/invoicing/api/customer/' + data.selected
+                    }).then(res => {
+                        console.log(res.data)
+                        setCustomer(res.data)
+                    })
+                }}/>
+                <br/>
+            <div style={{display:'flex', width: '100%'}}>
+                <div style={{flex: 1}}>
+                    <p><b>Type:</b> {customer ? customer.contact.type : ""}</p>
+                    <p><b>Phone:</b> {customer ? customer.contact.phone : ""}</p>
+                    <p><b>Email:</b> {customer ? customer.contact.email : ""}</p>
                 </div>
-                <button className="btn btn-block btn-lg primary"
-                    disabled={this.state.selected == ''}
-                    onClick={() =>{
-                        this.props.selectHandler(this.state.selected)
-                    }}>Select Customer</button>
-                <hr className="my-2"/>
-                <label htmlFor="name">Name:</label>
-                    <input className='form-control' type="text" id='name'
-                        value={this.state.name}
-                        onChange={evt=>{this.setState({
-                            name: evt.target.value})}}/>
-                <br/>
-                <label htmlFor="address">Address:</label>
-                    <textarea name="address" 
-                        rows="4" 
-                        className='form-control'
-                        value={this.state.address}
-                        onChange={evt=>{this.setState({
-                            address: evt.target.value})}}></textarea>
-                 <br/>
-                <label htmlFor="phone">Phone:</label>
-                    <input type="text" id='phone'className='form-control'
-                        value={this.state.phone}
-                        onChange={evt=>{this.setState({
-                            phone: evt.target.value})}}/>
-                <br/>
-                <label htmlFor="email">Email:</label>
-                    <input type="email" id='email'className='form-control'
-                        value={this.state.email}
-                        onChange={evt=>{this.setState({
-                            email: evt.target.value})}}/>
-                
-
-                <button className="btn btn-block btn-lg primary"
-                    disabled={this.state.name==''}
-                    onClick={this.createCustomer}
-                    >Create Customer</button>
+                <div style={{flex: 1}}>
+                    <p><b>Address:</b> {customer ? customer.contact.address : ""}</p>
+                </div>
             </div>
-        )
-    }
+        </Modal>
+    )
 }
 
-export default CustomersPage;
+export default customerModal

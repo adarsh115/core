@@ -276,7 +276,7 @@ class ReportViewsTests(TestCase):
 
 class CustomerViewsTests(TestCase):
     fixtures = ['common.json', 'accounts.json', 'employees.json',  'inventory.json',
-                'invoicing.json']
+                'invoicing.json', 'settings.json']
 
     @classmethod
     def setUpClass(cls):
@@ -287,7 +287,8 @@ class CustomerViewsTests(TestCase):
             'name': 'Org',
             'billing_address': 'Test Address',
             'banking_details': 'Test Details',
-            'customer_type': 'organization'
+            'customer_type': 'organization',
+            'billing_currency': 1
         }
 
     @classmethod
@@ -308,7 +309,7 @@ class CustomerViewsTests(TestCase):
         new_data = copy.deepcopy(self.CUSTOMER_DATA)
         new_data.update({
             'name': 'cust omer',
-                    'customer_type': 'individual'
+            'customer_type': 'individual'
         })
         resp = self.client.post(
             reverse('invoicing:create-customer'),
@@ -319,6 +320,8 @@ class CustomerViewsTests(TestCase):
         resp = self.client.post(
             reverse('invoicing:create-customer'),
             data=self.CUSTOMER_DATA)
+
+        
         self.assertEqual(resp.status_code, 302)
 
     def test_get_update_customer_page(self):
@@ -348,8 +351,11 @@ class CustomerViewsTests(TestCase):
             'name': 'Org man',
             'billing_address': 'Test Address',
             'banking_details': 'Test Details',
-            'customer_type': 'individual'
+            'customer_type': 'individual',
+            'billing_currency': 1
         })
+
+        
         self.assertEqual(resp.status_code, 302)
 
     def test_post_customer_update_page_switch_to_org(self):
@@ -504,7 +510,7 @@ class SalesRepViewsTests(TestCase):
 
 class InvoiceViewTests(TestCase):
     fixtures = ['common.json', 'accounts.json', 'employees.json',  'inventory.json',
-                'journals.json', 'invoicing.json']
+                'journals.json', 'invoicing.json', 'settings.json']
 
     @classmethod
     def setUpClass(cls):
@@ -518,29 +524,34 @@ class InvoiceViewTests(TestCase):
             'due': TODAY.strftime('%m/%d/%Y'),
             'date': TODAY.strftime('%m/%d/%Y'),
             'ship_from': 1,
+            'currency': 1,
+            'exchange_rate': 1,
             'terms': 'Test Terms',
             'comments': 'test comments',
             'item_list': json.dumps([
                 {
                     'type': 'product',
-                    'selected': '1 - item',
-                    'quantity': 1,
+                    'item': '1',
+                    'qty': 1,
                     'tax': '1 - Tax',
-                    'unitPrice': '5.00',
+                    'tax_id': '1',
+                    'unit_price': '5.00',
                     'discount': '0'
                 },
                 {
                     'type': 'service',
-                    'selected': '1 - item',
-                    'hours': 1,
-                    'fee': '200',
+                    'item': '1',
+                    'qty': 1,
+                    'rate': '200',
                     'tax': '1 - tax',
+                    'tax_id': '1',
                     'discount': '0',
-                    'rate': 50
+                    'unit_price': 50
                 },
                 {
                     'type': 'expense',
                     'selected': '1 - item',
+                    'tax_id': '1',
                     'tax': '1 - tax',
                     'discount': '0'
                 }
@@ -575,6 +586,7 @@ class InvoiceViewTests(TestCase):
     def test_post_create_invoice_page(self):
         resp = self.client.post(reverse('invoicing:create-invoice'),
                                 data=self.DATA)
+        
         self.assertEqual(resp.status_code, 302)
 
     def test_get_invoice_detail_page(self):
@@ -610,21 +622,29 @@ class InvoiceViewTests(TestCase):
         resp = self.client.get(reverse('invoicing:invoices-list'))
         self.assertEqual(resp.status_code, 200)
 
-    def test_get_comnbined_invoice_payment_page(self):
+    def test_get_combined_invoice_payment_page(self):
         resp = self.client.get(reverse('invoicing:invoice-payment',
                                        kwargs={'pk': 1}))
         self.assertEqual(resp.status_code, 200)
 
     def test_post_invoice_payment_page(self):
+        method = PaymentMethod.objects.create(
+            name = 'default',
+            currency = accounting.models.Currency.objects.first(),
+            account = accounting.models.Account.objects.get(pk=1000)
+        )
+
         resp = self.client.post(reverse('invoicing:invoice-payment',
                                         kwargs={'pk': 1}), data={
             'invoice': 1,
             'amount': 10,
-            'method': 'transfer',
+            'method': method.pk,
             'sales_rep': 1,
+            'currency': 1,
             'comments': 'Test Comments',
             'date': TODAY.strftime('%m/%d/%Y')
         })
+
         self.assertEqual(resp.status_code, 302)
 
     def test_get_invoice_payment_detail_page(self):
@@ -671,6 +691,7 @@ class InvoiceViewTests(TestCase):
             'date': TODAY.strftime('%m/%d/%Y'),
             'invoice': 1,
             'comments': 'test comments',
+            'currency': 1,
             'returned-items': json.dumps([{
                 'product': '1 - product',
                 'returned_quantity': 1
@@ -757,7 +778,7 @@ class InvoiceViewTests(TestCase):
 
 class QuotationViewTests(TestCase):
     fixtures = ['common.json', 'accounts.json', 'employees.json',  'inventory.json',
-                'journals.json', 'invoicing.json']
+                'journals.json', 'invoicing.json', 'settings.json']
 
     @classmethod
     def setUpClass(cls):
@@ -770,31 +791,27 @@ class QuotationViewTests(TestCase):
             'quotation_valid': TODAY.strftime('%m/%d/%Y'),
             'quotation_date': TODAY.strftime('%m/%d/%Y'),
             'ship_from': 1,
+            'currency': 1,
+            'exchange_rate':5,
             'terms': 'Test Terms',
             'comments': 'test comments',
             'item_list': json.dumps([
                 {
                     'type': 'product',
-                    'selected': '1 - item',
-                    'unitPrice': '5.00',
-                    'quantity': 1,
-                    'tax': '1 - Tax',
+                    'item': '1',
+                    'unit_price': '5.00',
+                    'qty': 1,
+                    'tax_id': 1,
                     'discount': '0'
                 },
                 {
                     'type': 'service',
-                    'selected': '1 - item',
-                    'hours': 1,
-                    'tax': '1 - tax',
+                    'item': '1',
+                    'qty': 1,
+                    'tax_id': 1,
                     'discount': '0',
-                    'fee': 200,
-                    'rate': 20.00
-                },
-                {
-                    'type': 'expense',
-                    'selected': '1 - item',
-                    'tax': '1 - tax',
-                    'discount': '0'
+                    'rate': 200,
+                    'unit_price': 20.00
                 }
             ])
         }
@@ -823,9 +840,8 @@ class QuotationViewTests(TestCase):
         self.assertEqual(resp.status_code, 200)
 
     def test_post_quotation_create_view(self):
-        resp = self.client.post(reverse('invoicing:create-quotation'),
-                                data=self.DATA)
-
+        resp = self.client.post(reverse('invoicing:create-quotation'), data=self.DATA)
+        
         self.assertEqual(resp.status_code, 302)
 
     def test_get_quotation_update_view(self):
@@ -840,6 +856,7 @@ class QuotationViewTests(TestCase):
         resp = self.client.post(reverse('invoicing:quotation-update', kwargs={
             'pk': self.quotation.pk
         }), data=self.DATA)
+
         self.assertEqual(resp.status_code, 302)
 
     def test_get_quotation_detail_view(self):
@@ -1323,26 +1340,29 @@ class POSViewTests(TestCase):
         self.assertEqual(json.loads(resp.content).get('status', None), 'OK')
 
     def test_pos_process_sale(self):
+        method = PaymentMethod.objects.create(
+            name = 'default',
+            currency = accounting.models.Currency.objects.first(),
+            account = accounting.models.Account.objects.get(pk=1000)
+        )
+
         resp = self.client.post('/invoicing/pos/process-sale/', content_type='application/json', data={
-            'session': self.session.pk,
-            'invoice': {
-                'customer': '1 -customer',
-                'sales_person': '1 - sales rep',
-                'lines': [
-                    {
-                        'id': 1,#check product
-                        'price': 100,
-                        'quantity': 1,
-                        'tax': {
-                            'id': 1
-                        }
-                    }
-                ]
-            },
+            'sessionID': self.session.pk, 
+            'customer_id': 1,
+            'salesPersonID': 1,
+            'products': [
+                {
+                    'id': 1,#check product
+                    'price': 100,
+                    'quantity': 1,
+                    'tax_id': 1, 
+                }
+            ]
+            ,
             'payments': [
                 {
                     'tendered': 100,
-                    'method': 'transfer'
+                    'method_id': method.pk
                 }
             ],
             'timestamp': datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.123213')

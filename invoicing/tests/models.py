@@ -322,11 +322,12 @@ class InvoiceModelTests(TestCase):
         pre_total = self.invoice.subtotal
         self.invoice.add_line({
             'type': 'product',
-            'selected': '1-name',
-            'quantity': 1,
+            'item': '1',
+            'qty': 1,
             'tax': '1- tax',
+            'tax_id': '1',
             'discount': '0',
-            'unitPrice': 50.00
+            'unit_price': 50.00
         })
         self.assertEqual(self.invoice.total, pre_total + 50)
 
@@ -334,37 +335,25 @@ class InvoiceModelTests(TestCase):
         pre_total = self.invoice.subtotal
         self.invoice.add_line({
             'type': 'service',
-            'selected': '1-name',
-            'hours': 0,
+            'item': '1',
+            'qty': 0,
             'tax': '1- tax',
-            'fee': '200',
+            'tax_id': '1',
+            'rate': '200',
             'discount': '0',
-            'rate': 50
+            'unit_price': 50
         })
         self.assertEqual(self.invoice.total, pre_total + 200)
 
-    def test_add_expense_line(self):
-        pre_total = self.invoice.subtotal
-        self.invoice.add_line({
-            'type': 'expense',
-            'selected': '1-name',
-            'hours': 0,
-            'tax': '1-tax',
-            'discount': '0'
-        })
-        added = Expense.objects.get(pk=1).amount
-        self.assertEqual(self.invoice.total, pre_total + added)
-
+    
     def test_line_subtotal(self):
         self.assertEqual(self.product_line.subtotal, 10)
         self.assertEqual(self.service_line.subtotal, 100)
-        self.assertEqual(self.expense_line.subtotal, 100)
-
+        
     def test_invoice_str(self):
         self.assertIsInstance(str(self.product_line), str)
         self.assertIsInstance(str(self.service_line), str)
-        self.assertIsInstance(str(self.expense_line), str)
-
+        
     def test_service_line_line_property(self):
         self.assertIsInstance(self.service_line.line, InvoiceLine)
 

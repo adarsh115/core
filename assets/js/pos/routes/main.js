@@ -4,18 +4,16 @@ import Head from '../components/head'
 import axios from '../../src/auth'
 import styles from '../pos.css';
 import SelectThree from '../../src/select_3';
+import Modal from '../../src/components/modal';
+import CustomerModal from './customers'
+import ProductModal from './products'
 
 class MainPage extends Component{
     state = {
         products: [],
         payments: [],
-        currentSaleID: null,
         sessionID: null,
-        checkoutState: {},
-        keypadText: "",
-        keypadState: "barcode", //quantity, price, barcode
-        isQuote: false,
-        suspendedSale: null,
+        sale_mode: true,
         customer_id: null,
         customer_name: "",
         current_item_id: null,
@@ -28,10 +26,13 @@ class MainPage extends Component{
         total_tendered: 0,
         change: 0,
         salesPerson: null,
-        modalOpen: false,
+        salesPersonID: null,
         sessionStart: new Date(),
         allProductsSelected: false,
         allPaymentsSelected: false,
+        showCustomerModal: false,
+        showProductModal: false,
+        showVoidModal: false
     }
 
     updateTotals() {
@@ -75,11 +76,16 @@ class MainPage extends Component{
     }
 
     addPayment =() => {
+        if(!this.state.sale_mode) {
+            bentschAlert("You need to use sale mode to add payments")
+            return
+        }
         axios.get('/invoicing/api/payment-method/' +this.state.current_payment_method_id )
             .then(res =>{
                 const newPayments = [...this.state.payments]
                 newPayments.push({
                     method: res.data.name,
+                    method_id: this.state.current_payment_method_id,
                     checked: false,
                     tendered: parseFloat(this.state.current_payment_amount)
                 })
@@ -141,6 +147,25 @@ class MainPage extends Component{
         this.setState({products: newProducts}, this.updateTotals)
     }
 
+    voidSale = () => {
+        this.setState({
+            products: [],
+            payments: [],
+            customer_id: null,
+            customer_name: "",
+            current_item_id: null,
+            current_payment_method_id: null,
+            current_item_qty: 0,
+            current_payment_amount: 0,
+            net_total: 0,
+            grand_total: 0,
+            tax: 0,
+            total_tendered: 0,
+            change: 0,
+            showVoidDialog: false
+        })
+    }
+
     //#######################################################
     // Handles Route Events 
     //#######################################################
@@ -161,6 +186,63 @@ class MainPage extends Component{
                 this.setState({currentCustomer: `${first.id} - ${first.name}`})
             }
         })
+        // start a new session
+        axios({
+            method: 'POST',
+            url: '/invoicing/pos/start-session/',
+            data: {
+                timestamp: this.state.sessionStart
+            }
+
+        }).then(res =>{
+            console.log(res)
+            this.setState({
+                sessionID: res.data.id,
+                salesPerson: res.data.rep,
+                salesPersonID: res.data.rep_id
+            })
+        })
+    }
+
+    submit = () =>{
+        //validate customer items payment 
+        if(!this.state.customer_id) {
+            bentschAlert("A valid customer is required to proceed")
+            return
+        }
+
+        if(!this.state.products.length) {
+            bentschAlert("No products have been added to cart, cannot proceed.")
+            return
+        }
+
+        if(!this.state.payments.length) {
+            bentschAlert("No payments have been applied to the transaction. Cannot proceed.")
+            return
+        }
+        axios({
+            method: 'POST',
+            url: '/invoicing/pos/process-sale/',
+            data: {
+                ...this.state,
+            timestamp: new Date() 
+        }
+        }).then(res => {
+            this.voidSale()
+        })
+    }
+
+    endSession = () => {
+        axios({
+            method: 'POST',
+            url: '/invoicing/pos/end-session/',
+            data: {
+                id: this.state.sessionID,
+                timestamp: new Date() 
+            }
+        }).then(res => {
+            window.location.href = '/invoicing/'
+        })
     }
 
     render() {
@@ -170,16 +252,39 @@ class MainPage extends Component{
                 actionHandler: this.executeAction,
                 updateMapping: this.setKeyMapper
             }}>
+                {/* Modals  */}
+                <CustomerModal show={this.state.showCustomerModal}
+                    onClose={() => this.setState({showCustomerModal: false})} />
+                <ProductModal show={this.state.showProductModal}
+                    onClose={() => this.setState({showProductModal: false})} />
+                <Modal title="Confirm" 
+                    show={this.state.showVoidDialog}
+                    handleClose={() => this.setState({showVoidDialog: false})}>
+                    <p>Are you sure you want to void the current sale?</p>
+                    <div className="btn-group">
+                        <button className="btn btn-primary"
+                            onClick={this.voidSale}>Yes</button>
+                        <button className="btn btn-secondary"
+                            onClick={() => this.setState({showVoidDialog: false})}>No</button>
+                    </div>
+                </Modal>
                 <Head {...this.state}/>
                 <div className={styles.root}>
                     <div className={styles.sidebar}>
                         <ul className='list-group'>
-                            <li className="list-group-item">Price Check</li>
-                            <li className="list-group-item">Void</li>
-                            <li className="list-group-item">Customers</li>
-                            <li className="list-group-item">Suspend | Restore</li>
-                            <li className="list-group-item">Quote | Sale</li>
-                            <li className="list-group-item">Logout</li>
+                            <li className="list-group-item"
+                                onClick={() => this.setState({showProductModal: true})}>Price Check</li>
+                            <li className="list-group-item"
+                                onClick={() => this.setState({showVoidDialog: true})}>Void</li>
+                            <li className="list-group-item"
+                                onClick={() => this.setState({showCustomerModal: true})}>Customers</li>
+                            <li className="list-group-item"
+                              onClick={() => this.setState({sale_mode: !this.state.sale_mode})}>
+                                <span className={this.state.sale_mode ? null : styles.badge}>Quote</span> | 
+                                <span className={this.state.sale_mode ? styles.badge : null}>Sale</span>
+                            </li>
+                            <li className="list-group-item"
+                                onClick={this.endSession}>End Session</li>
                         </ul>
                     </div>
                     <div className={styles.fields}>
@@ -240,7 +345,8 @@ class MainPage extends Component{
                             <button className='btn btn-primary'
                                 onClick={this.addPayment}>Add Payment</button>
                         <hr/>
-                        <button class='btn btn-block btn-primary'>Submit Transaction</button>
+                        <button class='btn btn-block btn-primary'
+                            onClick={this.submit}>Submit Transaction</button>
                     </div>
                     <div className={styles.list}>
                         <h5>Items</h5>

@@ -25,6 +25,8 @@ import openpyxl
 from django.contrib import messages
 from services.models import Service
 from inventory.models import InventoryItem, ProductComponent, UnitOfMeasure
+from accounting.models import Expense, Account
+
 
 def process_data(items, inv):
     if items:

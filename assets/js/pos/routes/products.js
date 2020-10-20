@@ -1,66 +1,42 @@
 import React from 'react'
-import SearchableWidget from '../../src/components/searchable_widget'
+import {useState} from 'react'
+import Modal from '../../src/components/modal';
+import SelectThree from '../../src/select_3';
 import axios from '../../src/auth'
 
-class PriceCheckPage extends React.Component{
-    state = {
-        selected: null,
-        product: null
-    }
+const productModal = (props) => {
+    const [product, setProduct] = useState(null)
 
-    handleSelect =() =>{
-        console.log('called')
-        const pk = this.state.selected.split('-')[0]
-        axios.get('/inventory/api/product/' + pk)
-            .then(res=>this.setState({product: res.data}))
-    }
-
-    render(){
-        return(
-            <div>
-                <h1>Price Check</h1>
-                <hr className="my-2"/>
-                <p>Check prices on products without affecting the current transaction.</p>
-                <p>Search Name or Barcode:</p>
-                <div style={{
-                    marginBottom: '5px',
-                    border:'1px solid #23374d'
-                }}>
-                    <SearchableWidget 
-                            dataURL='/inventory/api/product/'
-                            displayField="name"
-                            idField="id"
-                            onSelect={val =>{this.setState({selected: val}, 
-                                this.handleSelect)}}
-                            onClear={()=> this.setState({
-                                product:null,
-                                selected: null
-                            })}/>
+    return (
+        <Modal title="Products"
+                show={props.show}
+                handleClose={props.onClose}>
+            <p>Product: </p>
+            <SelectThree 
+                app='inventory'
+                model="inventoryitem"
+                onSelect={data => {
+                    axios({
+                        method: 'GET',
+                        url: '/inventory/api/inventory-item/' + data.selected
+                    }).then(res => {
+                        setProduct(res.data)
+                    })
+                }}/>
+                <br/>
+            <div style={{display:'flex', width: '100%'}}>
+                <div style={{flex: 1}}>
+                    <p><b>Name:</b> {product ? product.name : ""}</p>
+                    <p><b>Unit:</b> {product && product.unit ? product.unit.name : ""}</p>
+                    <p><b>Unit Price:</b> {product ? product.unit_sales_price : ""}</p>
                 </div>
-                <div>
-                    {this.state.product != null 
-                        ?<React.Fragment>
-                            <h4>Name: {this.state.product.name}</h4>
-                            <h5>Unit Price: {this.state.product.unit_sales_price}</h5>
-                            <p>Code: {this.state.product.id}</p>
-                            <p>Description: {this.state.product.description}</p>
-                            {this.state.product.tax 
-                                ? <p>Tax: {this.state.product.tax.name}({this.state.product.tax.rate}%)</p>
-                                : null}
-                            <p>Unit: {this.state.product.unit.name}</p>
-                        </React.Fragment>
-                    : <p>NO PRODUCT SELECTED YET</p>}
-                    <div style={{
-                        display: 'flex', 
-                        flexDirection: 'row', 
-                        justifyContent: 'center'}}>
-                        <button className="btn btn-lg primary"
-                            onClick={this.props.handler}>Close</button>
-                    </div>
+                <div style={{flex: 1}}>
+                    <p><b>Quantity:</b> {product ? product.qty : ""}</p>
+                    <p><b>Tax:</b> {product && product.product_component.tax ? product.product_component.tax.name : ""}</p>
                 </div>
             </div>
-        )
-    }
+        </Modal>
+    )
 }
 
-export default PriceCheckPage
+export default productModal

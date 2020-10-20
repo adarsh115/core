@@ -29,6 +29,10 @@ class InventoryItemSerializer(serializers.ModelSerializer):
     equipment_component = EquipmentComponentSerializer(many=False)
     unit_sales_price = serializers.ReadOnlyField()
     unit = UnitSerializer(many=False)
+    qty = serializers.SerializerMethodField()
+
+    def get_qty(self, obj):
+        return obj.quantity
 
     class Meta:
         model = InventoryItem

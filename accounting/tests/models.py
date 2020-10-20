@@ -160,11 +160,13 @@ class AssetTests(TestCase):
             salvage_value=20,
         )
 
+
+
     def test_create_asset(self):
         obj = Asset.objects.create(
             name='Test Asset',
             description='Test description',
-            category=0,
+            category=AssetCategory.objects.first(),
             initial_value=100,
             credit_account=self.account_d,
             depreciation_period=5,

@@ -1,0 +1,28 @@
+.modal {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    background-color: rgba(0,0,0,0.3);
+    z-index: 10000;
+}
+
+.modal_content {
+   min-width: 400px;
+   max-width: 80%;
+   min-height: 30vh;
+   margin: 30px auto;
+   background-color: white;
+   padding: 0.75rem;
+   border-radius: 0.5rem; 
+}
+
+.modal_content_header {
+    color: white;
+    background-color: #23374d;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .5rem
+}

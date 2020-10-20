@@ -51,6 +51,13 @@ class Customer(SoftDeletionModel, QuickEntry):
             return str(self.individual)
 
     @property
+    def customer_phone(self):
+        if self.is_organization:
+            return self.organization.phone
+        else:
+            return self.individual.phone
+
+    @property
     def customer_email(self):
         if self.is_organization:
             return self.organization.email

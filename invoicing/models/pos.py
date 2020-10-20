@@ -9,7 +9,7 @@ class POSSession(models.Model):
                                      on_delete=models.CASCADE)
 
     def __str__(self):
-        return "%s: %s" % (str(self.sales_person), self.start.date)
+        return "%s: %s" % (str(self.sales_person), self.start.date())
 
 
 class POSSale(models.Model):

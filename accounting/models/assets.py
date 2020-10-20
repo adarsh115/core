@@ -64,15 +64,7 @@ class Asset(models.Model):
     @property
     def account(self):
         '''maps an asset choice to an asset account from the chart of accounts'''
-        mapping = {
-            0: 1005,
-            1: 1006,
-            3: 1008,
-            2: 1009,
-            4: 1011,
-            5: 1013,
-        }
-        return accounting.models.accounts.Account.objects.get(pk=mapping[self.category])
+        return self.category.account
 
     @property
     def depreciation_account(self):
@@ -81,14 +73,7 @@ class Asset(models.Model):
             return None  # land does not depreciate
         #'Buildings', 'Vehicles', 'LeaseHold Improvements',
         # 'Furniture and Fixtures', 'Equipment']
-        mapping = {
-            1: 5017,
-            3: 5020,
-            2: 5016,
-            4: 5018,
-            5: 5019,
-        }
-        return accounting.models.accounts.Account.objects.get(pk=mapping[self.category])
+        return self.category.account
 
     def __str__(self):
         return self.name
@@ -109,7 +94,7 @@ class Asset(models.Model):
 
     @property
     def category_string(self):
-        return dict(ASSET_CHOICES)[self.category]
+        return str(self.category)
 
     @property
     def annual_depreciation(self):
