@@ -19,11 +19,20 @@ class SalesRepsSerializer(serializers.ModelSerializer):
 
 class CustomerSerializer(serializers.ModelSerializer):
     expense_set = ExpenseSerializer(many=True, read_only=True)
+    contact = serializers.SerializerMethodField()
+
+    def get_contact(self, obj):
+        return {
+            'phone': obj.customer_phone,
+            'address': obj.address,
+            'email': obj.customer_email,
+            'type': "Organization" if obj.is_organization else "Individual"
+        }
 
     class Meta:
         model = Customer
         fields = ['name', 'id', 'expense_set', 'organization', 'billing_currency',
-                  'individual', 'account', 'billing_address', 'banking_details']
+                  'individual', 'account', 'billing_address', 'banking_details', 'contact']
 
 
 class ConfigSerializer(serializers.ModelSerializer):

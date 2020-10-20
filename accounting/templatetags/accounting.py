@@ -42,5 +42,6 @@ def active_currency(number):
 @register.filter
 def transaction_amount(transaction, field):
     value = getattr(transaction, field)
-    print(value)
-    return '{0} {1:0.2f}'.format(transaction.currency.symbol, value * transaction.exchange_rate)
+    return '{0} {1:0.2f}'.format(
+        transaction.currency.symbol if transaction.currency else "$", 
+        value * transaction.exchange_rate)

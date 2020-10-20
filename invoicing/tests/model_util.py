@@ -4,6 +4,7 @@ from services.tests.model_util import ServiceModelCreator
 from inventory.tests.model_util import InventoryModelCreator
 import accounting
 from employees.tests.model_util import EmployeeModelCreator
+import datetime
 
 
 class InvoicingModelCreator():
@@ -70,7 +71,9 @@ class InvoicingModelCreator():
             status='invoice',
             customer=self.cls.customer_org,
             ship_from=self.cls.warehouse,
-            salesperson=self.cls.sales_representative
+            salesperson=self.cls.sales_representative,
+            currency= accounting.models.Currency.objects.first(),
+            exchange_rate = 1
         )
 
         return self.cls.invoice
@@ -96,7 +99,10 @@ class InvoicingModelCreator():
             quotation_valid=datetime.date.today(),
             customer=self.cls.customer_org,
             ship_from=self.cls.warehouse,
-            salesperson=self.cls.sales_representative
+            salesperson=self.cls.sales_representative,
+            currency= accounting.models.Currency.objects.first(),
+            exchange_rate = 1
+
         )
 
         return self.cls.quotation

@@ -693,7 +693,7 @@ class AssetViewTests(TestCase):
         cls.data = {
             'name': 'name',
             'description': 'description',
-            'category': 0,
+            'category': 1,
             'initial_value': 100,
             'credit_account': 1000,
             'depreciation_period': 5,

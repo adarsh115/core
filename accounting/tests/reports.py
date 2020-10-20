@@ -43,7 +43,7 @@ TODAY = datetime.date.today()
 
 class ReportTests(TestCase):
     fixtures = ['accounts.json', 'journals.json', 'settings.json', 'common.json',
-                'employees.json', 'inventory.json', 'invoicing.json', 'planner.json', 'payroll.json']
+                'employees.json', 'inventory.json', 'invoicing.json', 'planner.json', 'payroll.json', 'asset_patch.json']
 
     @classmethod
     def setUpTestData(cls):

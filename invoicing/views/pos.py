@@ -6,22 +6,27 @@ import datetime
 from inventory.models import InventoryItem
 from accounting.models import Tax
 from invoicing.models import ProductLineComponent, SalesConfig
+from django.views.generic import TemplateView
+import os
+
+
+class POSAppView(TemplateView):
+    template_name = os.path.join('invoicing', 'pos.html')
 
 
 def process_sale(request):
     data = json.loads(request.body)
     timestamp = datetime.datetime.strptime(data['timestamp'].split('.')[0],
                                            '%Y-%m-%dT%H:%M:%S')
-    session = models.POSSession.objects.get(pk=data['session'])
+    session = models.POSSession.objects.get(pk=data['sessionID'])
     
     sales_person = models.SalesRepresentative.objects.get(
-        pk=data['invoice']['sales_person'].split('-')[0]
+        pk=data['salesPersonID']
     )
-
 
     # support having a generic customer
     customer = models.Customer.objects.get(
-        pk=data['invoice']['customer'].split('-')[0]
+        pk=data['customer_id']
     )
 
     invoice = models.Invoice.objects.create(
@@ -34,7 +39,7 @@ def process_sale(request):
         ship_from=SalesConfig.objects.first().default_warehouse
     )
 
-    for line in data['invoice']['lines']:
+    for line in data['products']:
         product = InventoryItem.objects.get(pk=line['id'])
         component = ProductLineComponent.objects.create(
             product=product,
@@ -43,8 +48,8 @@ def process_sale(request):
 
         )
         tax = None
-        if line['tax']:
-            tax = Tax.objects.get(pk=line['tax']['id'])
+        if line['tax_id']:
+            tax = Tax.objects.get(pk=line['tax_id'])
 
         models.InvoiceLine.objects.create(
             invoice=invoice,
@@ -60,13 +65,14 @@ def process_sale(request):
     )
 
     for payment in data['payments']:
+        method = models.PaymentMethod.objects.get(pk=payment['method_id'])
         models.Payment.objects.create(
             invoice=invoice,
             amount=payment['tendered'],
             date=timestamp.date(),
             sales_rep=sales_person,
             timestamp=timestamp,
-            method=payment['method']
+            method=method
         )
 
     
@@ -82,17 +88,26 @@ def start_session(request):
     timestamp = datetime.datetime.strptime(data['timestamp'].split('.')[0],
                                            '%Y-%m-%dT%H:%M:%S')
 
-    pk = data['sales_person'].split('-')[0]
-    sales_person = employee_models.Employee.objects.get(
-        pk=pk
+    
+    sales_person = employee_models.Employee.objects.filter(
+        user=request.user
     )
+    if not sales_person.exists():
+        sales_person = employee_models.Employee.objects.first()
+    else:
+        sales_person = sales_person.first()
+    
     session = models.POSSession.objects.create(
         start=timestamp,
         sales_person=sales_person
     )
 
     # return a session id
-    return JsonResponse({'id': session.pk})
+    return JsonResponse({
+        'id': session.pk,
+        'rep': sales_person.short_name, 
+        'rep_id': sales_person.pk, 
+        })
 
 
 # if a session is unended, use the timestamp of the last sale to end the session

@@ -121,7 +121,6 @@ class Invoice(SoftDeletionModel):
     def add_line(self, data):
         '''Takes a dictionary that represents the invoice line and create
         the appropriate objects to match the provided data'''
-        print(data)
         tax_id = data['tax_id']
         tax = Tax.objects.get(pk=tax_id) if tax_id else None
         # discount = D(data['discount'])

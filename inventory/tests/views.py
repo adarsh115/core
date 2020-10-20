@@ -286,7 +286,7 @@ class InventoryManagementViewTests(TestCase):
 
 class ItemViewTests(TestCase):
     fixtures = ['accounts.json', 'employees.json', 'common.json',  
-                'inventory.json', 'invoicing.json', 'journals.json']
+                'inventory.json', 'invoicing.json', 'journals.json', 'asset_patch.json']
 
     @classmethod
     def setUpClass(cls):
@@ -402,7 +402,7 @@ class ItemViewTests(TestCase):
     def test_post_equipment_with_asset_form(self):
         self.EQUIPMENT_DATA.update({
             'record_as_asset': True,
-            'asset_category': 0,
+            'asset_category': 1,
             'unit_purchase_price': 100,
             'initial_value': 100,
             'salvage_value': 0,
@@ -439,7 +439,7 @@ class ItemViewTests(TestCase):
     def test_post_equipment_with_asset_update_form(self):
         self.EQUIPMENT_DATA.update({
             'record_as_asset': True,
-            'asset_category': 0,
+            'asset_category': 1,
             'initial_value': 100,
             'unit_purchase_price': 100,
             'salvage_value': 0,
@@ -498,7 +498,7 @@ class ItemViewTests(TestCase):
 
 class OrderViewTests(TestCase):
     fixtures = ['accounts.json', 'employees.json', 'common.json',  'inventory.json',
-                'invoicing.json', 'journals.json']
+                'invoicing.json', 'journals.json', 'settings.json']
 
     @classmethod
     def setUpClass(cls):
@@ -513,6 +513,8 @@ class OrderViewTests(TestCase):
             'bill_to': 'Test Bill to',
             'ship_to': cls.warehouse.pk,
             'tax': 1,
+            'currency': 1,
+            'exchange_rate': 1,
             'tracking_number': '34234',
             'notes': 'Test Note',
             'status': 'draft',
@@ -708,7 +710,7 @@ class OrderViewTests(TestCase):
 
 class SupplierViewTests(TestCase):
     fixtures = ['accounts.json', 'employees.json', 'common.json', 'inventory.json',
-                'invoicing.json', 'journals.json']
+                'invoicing.json', 'journals.json', 'settings.json']
 
     @classmethod
     def setUpClass(cls):
@@ -728,7 +730,8 @@ class SupplierViewTests(TestCase):
 
         cls.SUPPLIER_DATA = {
             'vendor_type': 'individual',
-            'name': 'test supplier'
+            'name': 'test supplier',
+            'billing_currency': 1
         }
 
     def setUp(self):
@@ -739,8 +742,10 @@ class SupplierViewTests(TestCase):
         self.assertEqual(resp.status_code,  200)
 
     def test_post_supplier_create(self):
+        
         resp = self.client.post('/inventory/supplier/create',
                                 data=self.SUPPLIER_DATA)
+
         self.assertEqual(resp.status_code,  302)
 
     def test_post_supplier_create_organization(self):
@@ -748,9 +753,13 @@ class SupplierViewTests(TestCase):
                                 data={
                                     'vendor_type': 'organization',
                                     'name': 'vendor',
-                                    'address': 'somewhere'
+                                    'address': 'somewhere',
+                                    'billing_currency': 1
+                                    
                                 })
+        
         self.assertEqual(resp.status_code,  302)
+        
 
     def test_get_supplier_list(self):
         resp = self.client.get('/inventory/supplier/list/')
@@ -777,8 +786,10 @@ class SupplierViewTests(TestCase):
                                             'pk': self.supplier.pk
                                         }), data={
             "vendor_type": "organization",
-            "name": "other supplier"
+            "name": "other supplier",
+            "billing_currency": 1
         })
+
         self.assertEqual(resp.status_code,  302)
 
     def test_post_supplier_update_no_swap_individual(self):
@@ -801,8 +812,10 @@ class SupplierViewTests(TestCase):
                                             'pk': self.sup_ind.pk
                                         }), data={
             'vendor_type': 'organization',
-            'name': 'swapped'
+            'name': 'swapped',
+            'billing_currency': 1
         })
+        
         self.assertEqual(resp.status_code,  302)
 
     def test_get_supplier_delete(self):
@@ -1138,7 +1151,8 @@ class ConfigWizardTests(TestCase):
         supplier_data = {
             'config_wizard-current_step': 3,
             '3-vendor_type': 'individual',
-            '3-name': 'caleb kandoro'
+            '3-name': 'caleb kandoro',
+            '3-billing_currency':1,
         }
 
         data_list = [config_data, employee_data, controller_data,

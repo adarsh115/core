@@ -462,7 +462,7 @@ class RequisitionViewTests(TestCase):
 
 
 class ServiceViewTests(TestCase):
-    fixtures = ['common.json', 'inventory.json']
+    fixtures = ['common.json', 'inventory.json', 'settings.json']
 
     @classmethod
     def setUpClass(cls):
@@ -509,10 +509,13 @@ class ServiceViewTests(TestCase):
             'flat_fee': 0.0,
             'hourly_rate': 1.5,
             'category': 1,
+            'tax': 1,
             'procedure': 1,
             'frequency': 'once',
             'is_listed': True
         })
+
+        
         self.assertEqual(resp.status_code, 302)
 
     def test_list_services_page(self):
@@ -535,9 +538,11 @@ class ServiceViewTests(TestCase):
             'flat_fee': 0.0,
             'category': 1,
             'procedure': 1,
+            'tax': 1,
             'frequency': 'once',
             'is_listed': False
         })
+
         self.assertEqual(resp.status_code, 302)
 
 
@@ -677,7 +682,7 @@ class WorkOrderViewTests(TestCase):
 
 
 class ConfigWizardTests(TestCase):
-    fixtures = ['common.json']
+    fixtures = ['common.json', 'settings.json']
 
     @classmethod
     def setUpClass(cls):
@@ -693,7 +698,7 @@ class ConfigWizardTests(TestCase):
     def setUp(self):
         self.client.login(username='Testuser', password='123')
 
-    def test_inventory_wizard(self):
+    def test_services_wizard(self):
         service_data = {
             '0-name': 'name',
             '0-description': 'name',
@@ -701,6 +706,7 @@ class ConfigWizardTests(TestCase):
             '0-flat_fee': 200,
             '0-name': 'name',
             '0-frequency': 'once',
+            '0-tax': 1,
             'config_wizard-current_step': 0
         }
 

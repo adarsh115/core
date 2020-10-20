@@ -49,3 +49,14 @@
     flex: 1;
     text-align: right;
 }
+
+
+.badge {
+    padding: .25rem 1rem;
+    margin: 0px 0.5rem;
+    display: inline-block;
+    background-color: #23374d;
+    color: white;
+    font-weight: 500;
+    border-radius: 1rem;
+}
