@@ -1,0 +1,53 @@
+{% extends 'window.html' %}
+{% load web_tags %}
+
+
+{% block contents %}
+
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            {% if items.count == 0 %}
+            <div class="alert alert-primary">
+                Your wish list is empty. Browse our site and add some items!
+            </div>
+            {% endif %}
+            {% for product in items %}
+            <div class="wishlist-card" id="wishlist-item-{{product.pk}}">
+                <img src="{{inventory.inventoryitem.primary_photo_url}}" alt="item image">
+                <div class="wishlist-card-content">
+                    <h4>{{product.product}}</h4>
+                    <p><i class="fa fa-calendar-o" aria-hidden="true"></i> {{inventoryitem.date_added}} </p>
+                    {% if product.product.discount > 0 %}
+                    <p class="card-text "><span
+                            class="old-price">{{currency}}{{inventory.inventoryitem.unit_price | currency:request.session.currency}}</span>
+                        <br>
+                        <strong
+                            class='new-price'>{{currency}}{{inventory.inventoryitem.discounted_price | currency:request.session.currency}}
+                            <sup>{{inventory.inventoryitem.discount}}% OFF!</sup></strong></p>
+                    {% else %}
+                    <p class="card-text">
+                        {{inventory.inventoryitem.product.unit_price | currency:request.session.currency}}
+                    </p>
+                    {% endif %}
+
+                </div>
+                <div class="wishlist-card-actions">
+                    <button class="remove-wishlist-item-button" onclick='removeFromWishlist({{product.pk}})'><i
+                            class="fa fa-times" aria-hidden="true"></i></button>
+                    <h2>{{product.product.quantity_in_stock}}</h2>
+                    <h5>IN STOCK</h5>
+                    <button class='btn btn-info' onclick='openAddToCart({{product.product.pk}})'><i
+                            class="fa fa-shopping-cart" aria-hidden="true"></i> Add to Cart</button>
+                </div>
+            </div>
+
+            {% endfor %}
+
+        </div>
+    </div>
+</div>
+{% endblock contents %}
+
+{% comment %} wishlist view with contextmixin {% endcomment %}

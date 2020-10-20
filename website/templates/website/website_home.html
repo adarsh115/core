@@ -1,0 +1,103 @@
+{% extends 'website_window.html' %}
+
+{% load static %}
+
+{% block contents %}
+
+<section id="showcase">
+    <div class="showcase-text-container">
+        <h1> Bentsch Selection</h1>
+        <div class="search-window">
+            <div class="search-box">
+                <i class="fa fa-search fa-2x" aria-hidden="true"></i>
+                <input type="text" class="search-input" id='search' placeholder="Search...">
+            </div>
+            <div id="search-results">
+
+            </div>
+        </div>
+        <div>
+        </div>
+    </div>
+</section>
+<section id="products">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3 col-sm-12 departments">
+                {% include 'website/department_list.html' %}
+            </div>
+
+            <div class='col-md-9 col-sm-12' id="best-sellers">
+                <h2>Best Sellers</h2>
+                <div class='card-deck'>
+                {% for product in best_sellers %}
+                    {% include "website/product_card.html" %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="promo">
+
+    <div class="promo-msg">
+        <h3>SPECIAL</h3>
+        <h2>Up To 50% Off!</h2>
+        <h3>The Latest Trends</h3>
+        <a href="/discount/" class="btn btn-lg btn-block">View Collection</a>
+    </div>
+    
+</section>
+<section id="trend">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3 col-sm-12">
+                <h3>An Outfit</h3>
+                <h2> For All Occasions</h2>
+                <p>Get the perfect outfit for the occasion<br> Hurry while stocks last</p>
+                <a href="/featured/" class="btn trend-link">See Collection</a>
+            </div>
+            <div class="col-md-9 col-sm-12">
+                <div id="featured-items" class="carousel slide" data-ride="carousel">
+                    <ol class="carousel-indicators">
+                        {% for item in featured %}
+                            <li data-target="#featured-items" data-slide-to="{{forloop.counter0}}" {% if forloop.counter == 1 %} class="active"{% endif %}></li>
+                        {% endfor %}
+                        
+                    </ol>
+                    <div class="carousel-inner" role="listbox">
+                        {% for item in featured %}
+                        <div class="carousel-item {% if forloop.counter == 1 %}active{% endif %}">
+                            <img class='center-block' {% if forloop.counter == 1 %}src{% else %}data-src{% endif %}="{{item.primary_photo_url}}" alt="Featured slide">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <a class="carousel-control-prev" href="#featured-items" role="button" data-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                    <a class="carousel-control-next" href="#featured-items" role="button" data-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Next</span>
+                    </a>
+                </div>
+                {% for card in trends %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>            
+</section>
+
+<script>
+$(function() {
+    $('.carousel').bind('slide.bs.carousel', function (e) {
+        var image = $(e.relatedTarget).find('img[data-src]');
+        image.attr('src', image.data('src'));
+        image.removeAttr('data-src');
+    });
+});
+</script>
+
+
+
+{% endblock contents %}

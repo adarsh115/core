@@ -1,0 +1,71 @@
+{% load static %}
+
+<div class='alert-container'>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-primary ">
+                <p>{{message}}</p><button class='btn btn-primary btn-sm' onclick="dismissAlert(this)" ><i class="fa fa-times" aria-hidden="true"></i></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<nav>
+   <div class="nc-nav">
+       <div class="nc-nav-hero"> <a href="/"> <img src=" {% static 'website/images/logo3.png' %} " alt="" class='logo'>
+           </a> </div>
+       <div class="nc-nav-content">
+           <ul class="nc-nav-items">
+               <li class='nav-search-element'>
+                   <div class='nav-search'>
+                       <input id='nav-search' placeholder='Search...' type="text">
+                       <button onclick='revealNavSearch()'>
+                           <i class="fa fa-search" aria-hidden="true"></i>
+                       </button>
+                   </div>
+                   <div id="nav-search-results"></div>
+               </li>
+               {% for dept in departments %}
+               {% if dept.show_in_navigation %}
+               <li class='mobile-only'> <a href="{% url 'website:department' pk=dept.pk %}">{{dept | upper }}</a></li>
+               {% endif %}
+               {% endfor %}
+               <li> <a href="/account"><i class="fa fa-user" aria-hidden="true"></i> MY ACCOUNT</a></li>
+               <li> <a href="/wishlist">WISHLIST - <span id='wishlist-count'>{{wishlist_count}}</span></a> </li>
+               <li><a href="/cart"><i class="fa fa-shopping-bag" aria-hidden="true"></i> <span id='cart-count'
+                           class="badge badge-primary">{{cart_count}}</span></a></li>
+           </ul>
+       </div>
+       <div id="nc-nav-button">
+           <i class="fa fa-bars" aria-hidden="true"></i>
+       </div>
+   </div>
+   <div class="nc-nav-depts style">
+       <ul class="nc-nav-items">
+           {% for dept in departments %}
+           {% if dept.show_in_navigation %}
+           <li> <a href="{% url 'website:department' pk=dept.pk %}">{{dept | upper }}</a></li>
+           {% endif %}
+           {% endfor %}
+       </ul>   </div>
+   <script>
+       $('#nc-nav-button').click(function () {
+           $('.nc-nav-content').toggleClass('nav-visible')
+       })
+   </script>
+</nav>
+
+{% if crumbs %}
+<div class="breadcrumbs">
+    <h3>{{crumb_title}}</h3>
+    <ul>
+        <li>
+            <a href="/"><i class="fa fa-home" aria-hidden="true"></i></a>
+        </li>
+        {% for crumb in crumbs %}
+            <li><i class="fa fa-angle-right" aria-hidden="true"></i> <a href="{{crumb.link}}">{{crumb.label}}</a></li>
+        {% endfor %}
+    </ul>
+</div>
+
+{% endif %}

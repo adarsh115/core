@@ -23,7 +23,7 @@ from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
     re_path('admin/', admin.site.urls),
-    re_path(r'^$', Home.as_view()),
+    re_path(r'^home$', Home.as_view()),
     path('api-token-auth/', obtain_auth_token, name='api_token_auth'),
     re_path(r'^base/', include(('common_data.urls', 'base'), namespace='base')),
     re_path(r'^invoicing/', include(("invoicing.urls",
@@ -42,5 +42,6 @@ urlpatterns = [
     re_path(r'^manufacturing/', include(("manufacturing.urls",
                                          'manufacturing'), namespace="manufacturing")),
     re_path(r'^calendar/*', ReactCalendar.as_view()),
-    re_path(r'^', include('django.contrib.auth.urls'))
+    re_path(r'^', include('django.contrib.auth.urls')),
+    re_path(r'^', include(("website.urls", "website"), namespace="website"))
 ] + static.static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

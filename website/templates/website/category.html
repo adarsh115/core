@@ -1,0 +1,43 @@
+{% extends 'website_window.html' %}
+
+
+{% block contents %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-3 col-sm-12">
+            <h3>{{object.name}}</h3>
+
+            <img src="{{object.image.url}}" alt="" class='img'>
+            
+            <p>{{object.description}}</p>
+
+            <div class="card-body">
+                    <h4 class="card-title filter-title">Filters <i class="fa fa-filter" aria-hidden="true"></i></h4>
+                    <form method="get" class='filter-form'>
+                        {{ filter.form.as_p }}
+                        <input type="submit" />
+                    </form>
+                </div>
+    
+            <br>
+            
+        </div>
+        <div class="col-md-9 col-sm-12">
+                {% if filter.qs.count == 0 %}
+                    <div class='alert alert-primary'>
+                        No products in this category.
+                    </div>
+                {% else %}
+            <div class="card-deck product-grid">
+                {% for product in object_list %}
+                    {% include "website/product_card.html" %}
+                {% endfor %}
+            </div>
+            {% include 'website/pagination.html' %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock contents %}

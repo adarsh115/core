@@ -43,6 +43,7 @@ class InventoryItem(QuickEntry, SoftDeletionModel):
     height = models.FloatField(default=0.0)
     image = models.FileField(blank=True, null=True)
     description = models.TextField(blank=True, default="")
+    featured = models.BooleanField(default=False, null=True)
     unit = models.ForeignKey('inventory.UnitOfMeasure',
                              on_delete=models.SET_NULL,
                              null=True,

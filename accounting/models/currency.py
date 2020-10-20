@@ -9,6 +9,9 @@ class Currency(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name_plural = "Currencies"
+
 class ExchangeRate(models.Model):
     date = models.DateField()
     from_currency = models.ForeignKey('accounting.Currency',
@@ -19,3 +22,6 @@ class ExchangeRate(models.Model):
 
     def __str__(self):
         return "%s to %s" % (self.from_currency, self.to_currency)
+
+    class Meta:
+        verbose_name_plural = "Exchange Rate"

@@ -1,0 +1,36 @@
+{% extends 'website_window.html' %}
+
+{% load static %}
+{% block contents %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-3 col-sm-12">
+            <h3>Deals</h3>
+
+            <img src="{{image}}" alt="" class='img'>
+            
+            <p>{{description}}</p>
+
+            
+            <br>
+            
+        </div>
+        <div class="col-md-9 col-sm-12">
+                {% if object_list == 0 %}
+                    <div class='alert alert-primary'>
+                        No products in this category.
+                    </div>
+                {% else %}
+            <div class="card-deck product-grid">
+                {% for product in object_list %}
+                    {% include "website/product_card.html" %}
+                {% endfor %}
+            </div>
+            {% comment %} {% include 'website/pagination.html' %} {% endcomment %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock contents %}

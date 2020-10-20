@@ -1,0 +1,6 @@
+<h3 id='departments'> Departments </h3>
+<ul class="department-list">
+    {% for dept in departments %}
+        <li class='list__dept-item'> <a href="{% url 'website:department' pk=dept.pk %}">{{dept}}</a></li>
+    {% endfor %}
+</ul>

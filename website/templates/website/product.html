@@ -1,0 +1,93 @@
+{% extends 'website_window.html' %}
+{% load web_tags %}
+
+
+{% block contents %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-3 col-sm-12">
+            {% include "website/department_list.html" %}
+        </div>
+        <div class="col-md-9 col-sm-12">
+            <div class="row">
+                <div class="col-md-6 col-sm-12">
+                    <div class='product-img'>
+                        <img id='main-product-img' src="{{object.primary_photo_url}}" class='img' alt="Image">
+                    </div>
+                    {% if object.productimage_set.all.count > 1 %}
+                        <div class="product-img-gallery">
+                            {% for img in object.productimage_set.all %}
+                                <div id='product-img-{{img.pk}}' class='gallery-img'>
+                                    <img src="{{img.image.url}}" alt="Image">
+                                </div>
+                            {% endfor %}
+                        </div>        
+                    {% endif %}
+                    
+                </div>
+                <div class="col-md-6 col-sm-12">
+                    <div class="product-sidebar">
+                        <h3>{{object}}</h3>
+                    {% if object.discount %}
+                        <p class='card-text'><span class="old-price">{{currency}}{{object.unit_price | currency:request.session.currency}}</span><br>
+                        <strong class='new-price'>{{currency}}{{object.discounted_price | currency:request.session.currency}}<sup>{{object.discount}}% OFF!</sup></strong></p>
+
+                    {% else %}
+                        <p class="card-text">{{currency}}{{object.unit_price | currency:request.session.currency}}</p>
+                    {% endif %}
+                    <hr>
+                    <div>
+                        <h5>Available SKU's</h5>
+                        <div>
+                            <p><b>{{object.sku_set.first.attribute}}</b></p>
+                            {% for sku in object.sku_set.all %}
+                                <p><input type="radio" name="product_sku" id="" value="{{sku.pk}}" {% if forloop.counter == 1 %}checked{% endif %} >{{sku.value}}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="basket-input">
+                        <button onclick='decrement("quantity")' class="btn btn-sm"><i class="fa fa-minus" aria-hidden="true"></i></button>
+                        <input id='quantity' type="number" value='1' class="form-control form-control-sm">
+                        <button onclick='increment("quantity")' class="btn btn-sm"><i class="fa fa-plus" aria-hidden="true"></i></button>
+                        <button onclick='pageAddToCart({{object.pk}})' class="btn btn-primary btn-sm">ADD TO CART</button>
+                    </div>
+                    <button onclick="addToWishlist({{object.pk}})"><i class="fa fa-heart-o" aria-hidden="true"></i> ADD TO WISHLIST</button>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-12">
+                    <h4>Description</h4>
+                    <p>{{object.description}}</p>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-12">
+                    <h4>Related Products</h4>
+                    <div class="related-products">
+                        {% for product in object.related_products.all %}
+                            {% include "website/product_card.html" %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-12">
+                    <div class="share-row">
+                        <ul>
+                            <li><i class="fa fa-facebook fa-3x" aria-hidden="true"></i> <span>FACEBOOK</span></li>
+                            <li><i class="fa fa-twitter fa-3x" aria-hidden="true"></i> <span>TWITTER</span></li>
+                            <li><i class="fa fa-instagram fa-3x" aria-hidden="true"></i> <span>INSTAGRAM</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock contents %}

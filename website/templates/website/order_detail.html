@@ -1,0 +1,121 @@
+ {% extends 'website_window.html' %}
+{% load static %}
+
+
+
+
+{% block contents %}
+<div class="invoice-page-container">
+    <table id="page-layout"> 
+        <tbody>
+            <tr>
+                <td></td>
+                <table style=width:100%>
+                    <tbody>
+                        <tr>
+                            <td class="invoice-header-content" id="left">
+                                <table>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="2">{{object}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Date:</td>
+                                            <td>{{object.date}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <div class="invoice-address-info" id="left">
+                                    <p>Customer:</p>
+                                    <p>{{object.customer.full_name}}</p>
+                                    <br>
+                                    <p>{{order.customer.address_line_1}}</p>
+                                    <br>
+                                    <p>{{order.customer.address_line_2}}</p>
+                                    <br>
+                                    <p>{{order.customer.city}}</p>
+                                </div>
+
+                            <td>
+                                <div class="header-content-address-info" id="center"></div>
+                            </td>
+
+                            <td class="invoice-nc-detail" id="right" align="right">
+                                <div style="text-align: right;">
+                                    <div style="width: 100%; text-align: right; display: inline-block;">
+                                        <img class="invoice-logo" src="{% static 'website/images/logo3.png' %}"
+                                            alt="Logo">
+                                    </div>
+                                </div>
+                                <br>
+                                <div>
+                                    <h6><b>Nomie's Collection</b></h6>
+                                    <p>{{settings.shop_address | linebreaks}} </p>
+                                </div>
+                            </td>
+
+
+                            </td>
+                            <td></td>
+                            <td class="invoice-header-content" id="right"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            <tr>
+                <table class="invoice-simple-content table sm invoice-table" height="500" width="500">
+                    <thead>
+                        <tr>
+                            <th style="width:50%">Description</th>
+                            <th style="width:8%">Qty</th>
+                            <th style="width:8%">SKU</th>
+                            <th style="width:9%">Discount</th>
+                            <th style="width:15%">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody class="invoice-table-lines">
+                        {% for orderitem in object.orderitem_set.all %}
+                        <tr>
+                            <td>{{orderitem.item}}</td>
+                            <td>{{orderitem.quantity}}</td>
+                            <td>{{orderitem.sku}}</td>
+                            <td>{{orderitem.discount | floatformat:2}}</td>
+                            <td>{{orderitem.subtotal | floatformat:2}}</td>
+                        </tr>
+                        {% endfor %}
+                </tbody>
+            </tr>
+        </tbody>
+
+        <tfoot class="invoice-footer-position">
+            <tr>
+                <td colspan="4">
+                    <b>SubTotal:</b>
+                </td>
+                <td colspan="2">{{order.subtotal | floatformat:2}}</td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    <b>Tax Due:</b>
+                </td>
+                <td colspan="2">{{order.tax | floatformat:2}}</td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    <b>Total:</b>
+                </td>
+                <td colspan="2">{{order.total | floatformat:2}}</td>
+            </tr>
+        </tfoot>
+    </table>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+         <hr>
+         <p class="invoice-message-end">Thank you for your business</p>
+</div>
+
+{% endblock contents %}
+

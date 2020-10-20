@@ -1,0 +1,25 @@
+{% extends 'website_window.html' %}
+
+
+{% block contents %}
+
+
+<div class="container" style="min-height: 80vh;">
+    <div class="row">
+        <div class="col-12">
+            {% for q in object.faqitem_set.all %}
+            <div class="collapsible">
+                <button type="button">
+                    <h5><p class="faq_question">{{q.question}}</h5></p>
+                    <i class="fa fa-caret-left fa-2x" aria-hidden="true"></i>
+                </button>
+                <div class="collapsible-content">
+                    <p> {{q.answer}}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% endblock contents %}
