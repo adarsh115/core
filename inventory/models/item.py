@@ -14,8 +14,6 @@ from common_data.models import SoftDeletionModel
 from django.shortcuts import reverse
 from common_data.models import QuickEntry 
 
-
-
 class ItemPrice(models.Model):
     item = models.ForeignKey('inventory.inventoryitem', on_delete=models.CASCADE)
     buying = models.BooleanField(default=False)
@@ -130,7 +128,6 @@ class InventoryItem(QuickEntry, SoftDeletionModel):
             product_component__isnull=False,
             active=True)])
 
-
 class ProductComponent(models.Model):
     PRICING_CHOICES = [
         (0, 'Manual'),
@@ -149,7 +146,7 @@ class ProductComponent(models.Model):
     def quantity_on_date(self, date):
         '''
         Starts with current quantity
-        going back subtract the received invetory
+        going back subtract the received inventory
         add the sold inventory
         return the result
         i.e.
@@ -275,7 +272,6 @@ class ProductComponent(models.Model):
             [(item.invoiceline.subtotal - item.invoiceline.tax_) for item in items])
         return total_sales
 
-
 class EquipmentComponent(models.Model):
     CONDITION_CHOICES = [
         ('excellent', 'Excellent'),
@@ -305,4 +301,3 @@ class EquipmentComponent(models.Model):
     @property
     def in_storage(self):
         return self.inventoryitem.quantity - self.in_use
-        
