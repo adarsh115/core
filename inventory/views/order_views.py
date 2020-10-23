@@ -37,7 +37,6 @@ class OrderPOSTMixin(object):
         try:
             items = json.loads(urllib.parse.unquote(request.POST["items"]))
         except json.JSONDecodeError:
-            print(len(request.POST["items"]))
             if update_flag and len(request.POST["items"]) == 0:
                 return super().post(request, *args, **kwargs)
             messages.info(
@@ -64,7 +63,13 @@ class OrderPOSTMixin(object):
 
             unit = models.UnitOfMeasure.objects.get(
                 pk=unit_id)
+            
             item = models.InventoryItem.objects.get(pk=pk)
+            
+            if not item.supplier:
+                item.supplier = self.object.supplier
+                item.save()
+
             if item.type != 0:
                 continue  # filter non products
             order.orderitem_set.create(
