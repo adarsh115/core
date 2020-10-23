@@ -10,26 +10,13 @@ class UnitSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 
-class ProductComponentSerializer(serializers.ModelSerializer):
-    tax = TaxSerializer(many=False)
-
-    class Meta:
-        model = ProductComponent
-        fields = "__all__"
-
-
-class EquipmentComponentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EquipmentComponent
-        fields = "__all__"
 
 
 class InventoryItemSerializer(serializers.ModelSerializer):
-    product_component = ProductComponentSerializer(many=False)
-    equipment_component = EquipmentComponentSerializer(many=False)
     unit_sales_price = serializers.ReadOnlyField()
     unit = UnitSerializer(many=False)
     qty = serializers.SerializerMethodField()
+    tax = TaxSerializer(many=False)
 
     def get_qty(self, obj):
         return obj.quantity

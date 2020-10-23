@@ -1,7 +1,9 @@
 from accounting.models import (
     Account,
     Expense,
-    Tax
+    Tax,
+    AccountingSettings,
+    Currency
 )
 import datetime
 
@@ -10,6 +12,14 @@ class AccountingModelCreator():
     def __init__(self, klass):
         self.cls = klass
     # changed opening balances from 100 to 0
+
+    def create_all(self):
+        self.create_accounts()
+        self.create_expense()
+        self.create_tax()
+        self.create_currency()
+        self.create_settings()
+
 
     def create_accounts(self):
         self.cls.account_c = Account.objects.create(
@@ -44,3 +54,23 @@ class AccountingModelCreator():
         )
 
         return self.cls.tax
+
+    def create_currency(self):
+        self.cls.currency = Currency.objects.create(
+            name='ZWD',
+            symbol='P'
+        )
+        return self.cls.currency
+
+    def create_settings(self):
+        if not self.cls.currency:
+            self.create_currency()
+        if AccountingSettings.objects.all().count() == 0:
+            self.cls.accounting_settings = AccountingSettings.objects.create(
+                active_currency = self.cls.currency
+            )
+        else:
+            self.cls.accounting_settings = AccountingSettings.objects.first()
+            self.cls.accounting_settings.active_currency = self.cls.currency
+
+        return self.cls.accounting_settings

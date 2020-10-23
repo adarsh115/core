@@ -50,7 +50,7 @@ def inventory_track_plot(item):
     ordered.sort()
 
     chart.x_labels = ordered
-    chart.add(str(item), [item.product_component.quantity_on_date(date)
+    chart.add(str(item), [item.quantity_on_date(date)
                           for date in ordered])
     return chart
 

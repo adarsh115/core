@@ -4,6 +4,16 @@ import django_filters
 from .models import *
 
 
+class ItemPriceFilter(django_filters.FilterSet):
+    class Meta:
+        model = ItemPrice
+        fields = {
+            'item': ['exact'],
+            'buying': ['exact'],
+            'selling': ['exact'],
+            'currency': ['exact']
+        }
+
 class OrderFilter(django_filters.FilterSet):
     class Meta:
         model = Order

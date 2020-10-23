@@ -172,7 +172,7 @@ class CommonViewTests(TestCase):
 
 class InventoryManagementViewTests(TestCase):
     fixtures = ['accounts.json', 'employees.json', 'common.json', 'inventory.json',
-                'invoicing.json', 'journals.json']
+                'invoicing.json', 'journals.json', 'settings.json']
 
     @classmethod
     def setUpClass(cls):
@@ -300,15 +300,12 @@ class ItemViewTests(TestCase):
             'height': 0.0,
             'unit_purchase_price': 8,
             'description': 'Test Description',
+            'initial_quantity': 5,
             'supplier': cls.supplier.pk,
             'quantity': 10,
             'category': cls.category.pk,
-            'initial_quantity': 0
         }
         cls.PRODUCT_DATA = {
-            'margin': 0.2,
-            'markup': 0.2,
-            'direct_price': 10,
             'pricing_method': 2,
             'minimum_order_level': 0,
             'maximum_stock_level': 20,
@@ -316,7 +313,8 @@ class ItemViewTests(TestCase):
             'tax': Tax.objects.create(name='tax', rate=15).pk
         }
         cls.EQUIPMENT_DATA = {
-            'type': 1
+            'type': 1,
+            'condition': 'good'
         }
         cls.CONSUMABLE_DATA = {
             'minimum_order_level': 0,
@@ -396,7 +394,7 @@ class ItemViewTests(TestCase):
     def test_post_equipment_form(self):
         resp = self.client.post(reverse('inventory:equipment-create'),
                                 data=self.EQUIPMENT_DATA)
-
+        
         self.assertEqual(resp.status_code,  302)
 
     def test_post_equipment_with_asset_form(self):
@@ -1177,7 +1175,7 @@ class ConfigWizardTests(TestCase):
 
 class InventoryPurchaseViewTests(TestCase):
     fixtures = ['accounts.json', 'employees.json', 'common.json',  
-                'inventory.json', 'invoicing.json', 'journals.json']
+                'inventory.json', 'invoicing.json', 'journals.json', 'settings.json']
 
     @classmethod
     def setUpClass(cls):

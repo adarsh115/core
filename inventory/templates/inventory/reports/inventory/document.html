@@ -28,7 +28,7 @@
                                 {% endfor %}
                             </td>
                             <td>{{i.quantity | floatformat:2 }}</td>
-                            <td>{{i.product_component.stock_value | active_currency }}</td>
+                            <td>{{i.stock_value | active_currency }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>

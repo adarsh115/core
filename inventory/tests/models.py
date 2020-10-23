@@ -5,7 +5,7 @@ from decimal import Decimal as D
 
 from django.test import TestCase
 
-from accounting.models import JournalEntry, Tax
+from accounting.models import JournalEntry, Tax, AccountingSettings, Currency
 from common_data.models import Organization, Individual
 
 from common_data.tests import create_account_models
@@ -45,45 +45,50 @@ def create_test_inventory_models(cls):
         description='Test description'
     )
 
-    pc = models.ProductComponent.objects.create(
-        pricing_method=0,  # KISS direct pricing
-        direct_price=10,
-        margin=0.5,
-    )
-
     cls.product = models.InventoryItem.objects.create(
         name='test name',
         unit=cls.unit,
         type=0,
-        unit_purchase_price=10,
         description='Test Description',
         supplier=cls.supplier,
         minimum_order_level=0,
         maximum_stock_level=20,
         category=cls.category,
-        product_component=pc
     )
 
-    ec = models.EquipmentComponent.objects.create(
-        condition="excellent",
-        asset_data=cls.asset
+    Currency.objects.create(
+        name='usd',
+        symbol='$'
+    )
+
+    cls.item_price = models.ItemPrice.objects.create(
+        item=cls.product,
+        buying=False,
+        selling=True,
+        rate=10,
+        currency=Currency.objects.first()
+    )
+
+    cls.item_price = models.ItemPrice.objects.create(
+        item=cls.product,
+        buying=True,
+        selling=False,
+        rate=10,
+        currency=Currency.objects.first()
     )
 
     cls.equipment = models.InventoryItem.objects.create(
         name='test equipment',
         unit=cls.unit,
         type=1,
-        unit_purchase_price=10,
         description='Test Description',
         supplier=cls.supplier,
         category=cls.category,
-        equipment_component=ec
     )
 
     cls.consumable = models.InventoryItem.objects.create(
         name='test comsumable',
         unit=cls.unit,
-        unit_purchase_price=10,
         type=2,
         description='Test Description',
         supplier=cls.supplier,
@@ -110,7 +115,7 @@ def create_test_inventory_models(cls):
     cls.order = models.Order.objects.create(
         expected_receipt_date=TODAY,
         date=TODAY,
-        tax=Tax.objects.first(),  # 10%
+        tax=Tax.objects.latest('pk'),  # 10%
         supplier=cls.supplier,
         bill_to='Test Bill to',
         ship_to=cls.warehouse,
@@ -292,7 +297,7 @@ class CommonModelTests(TestCase):
 
 class ItemManagementModelTests(TestCase):
     fixtures = ['common.json', 'employees.json',
-                'inventory.json', 'accounts.json', 'journals.json']
+                'inventory.json', 'accounts.json', 'journals.json', 'settings.json']
 
     @classmethod
     def setUpTestData(cls):
@@ -573,7 +578,6 @@ class ItemModelTests(TestCase):
             name='other test name',
             unit=self.unit,
             type=0,
-            unit_purchase_price=8,
             description='Test Description',
             supplier=self.supplier,
             minimum_order_level=0,
@@ -590,29 +594,6 @@ class ItemModelTests(TestCase):
     def test_product_unit_sales_price(self):
         self.assertEqual(self.product.unit_sales_price, 10)
 
-    def test_margin_sales_price(self):
-        self.product.product_component.pricing_method = 1
-        self.product.product_component.margin = 0.3
-        self.product.product_component.save()
-        product = models.ProductComponent.objects.get(
-            pk=self.product.product_component.pk)
-        self.assertAlmostEqual(product.unit_sales_price, D(14.29),
-                               places=2)
-
-        self.product.product_component.pricing_method = 0
-        self.product.product_component.save()
-
-    def test_markup_sales_price(self):
-        self.product.product_component.pricing_method = 2
-        self.product.product_component.margin = 0.3
-        self.product.product_component.save()
-        product = models.ProductComponent.objects.get(
-            pk=self.product.product_component.pk)
-        self.assertAlmostEqual(product.unit_sales_price, D(10.00),
-                               places=2)
-        self.product.product_component.pricing_method = 0
-        self.product.product_component.save()
-
     def test_product_stock_value(self):
         self.order.status = 'order'
         self.order.save()
@@ -621,14 +602,13 @@ class ItemModelTests(TestCase):
         self.order.save()
 
     def test_sales_to_date(self):
-        self.assertEqual(self.product.product_component.sales_to_date, D(10.0))
+        self.assertEqual(self.product.sales_to_date, D(10.0))
 
     def test_create_equipment(self):
         obj = models.InventoryItem.objects.create(
             name='test equipment',
             type=1,
             unit=self.unit,
-            unit_purchase_price=10,
             description='Test Description',
             supplier=self.supplier,
             category=self.category,
@@ -641,7 +621,6 @@ class ItemModelTests(TestCase):
             name='test comsumable',
             unit=self.unit,
             type=2,
-            unit_purchase_price=10,
             description='Test Description',
             supplier=self.supplier,
             minimum_order_level=0,
