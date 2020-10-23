@@ -59,14 +59,14 @@ class MainPage extends Component{
             .then(res =>{ 
                 console.log(res)
                 let newProducts = [...this.state.products]
-                const tax_rate = [null, undefined].includes(res.data.product_component.tax) ? null : res.data.product_component.tax.rate  
+                const tax_rate = [null, undefined].includes(res.data.tax) ? null : res.data.tax.rate  
                 const tax_amount = tax_rate ? res.data.unit_sales_price * this.state.current_item_qty * (tax_rate / 100.0) : 0.0
                 newProducts.push({
                     name: res.data.name,
                     price: res.data.unit_sales_price,
                     id: res.data.id,
                     quantity: this.state.current_item_qty,
-                    tax_id:  [null, undefined].includes(res.data.product_component.tax) ? null : res.data.product_component.tax.id,
+                    tax_id:  [null, undefined].includes(res.data.tax) ? null : res.data.tax.id,
                     tax_amount: tax_amount,
                     checked: false
                 })

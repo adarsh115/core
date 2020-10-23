@@ -3,6 +3,7 @@ from common_data.tests.accounts import create_accounts
 from employees.tests.model_util import EmployeeModelCreator
 from inventory import models
 import datetime
+from accounting.models import Currency
 
 # change order status from order
 
@@ -17,7 +18,6 @@ class InventoryModelCreator():
         self.create_order()
         self.create_unit()
         self.create_inventory_category()
-        self.create_product_component()
         self.create_product()
         self.create_warehouse_item()
         self.create_orderitem()
@@ -51,20 +51,31 @@ class InventoryModelCreator():
         )
         return self.cls.inventory_category
 
-    def create_product_component(self):
-        self.cls.product_component = models.ProductComponent.objects.create(
-            pricing_method=0,  # KISS direct pricing
-            direct_price=10,
-            margin=0.5,
+    def create_item_price(self):
+        Currency.objects.create(
+        name='usd',
+        symbol='$'
+    )
+        self.cls.item_price = models.ItemPrice.objects.create(
+            item=self.cls.product,
+            buying=False,
+            selling=True,
+            rate=10,
+            currency=Currency.objects.first()
         )
-        return self.cls.product_component
+
+        self.cls.item_price_buying = models.ItemPrice.objects.create(
+            item=self.cls.product,
+            buying=True,
+            selling=False,
+            rate=10,
+            currency=Currency.objects.first()
+        )
+        return self.cls.item_price
 
     def create_product(self):
         if hasattr(self.cls, 'product'):
             return self.cls.product
-
-        if not hasattr(self.cls, 'product_component'):
-            self.create_product_component()
 
         if not hasattr(self.cls, 'unit'):
             self.create_unit()
@@ -78,14 +89,13 @@ class InventoryModelCreator():
             name='test name',
             unit=self.cls.unit,
             type=0,
-            unit_purchase_price=10,
             description='Test Description',
             supplier=self.cls.supplier,
             minimum_order_level=0,
             maximum_stock_level=20,
             category=self.cls.inventory_category,
-            product_component=self.cls.product_component
         )
+        self.create_item_price()
 
         return self.cls.product
 

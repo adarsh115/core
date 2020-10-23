@@ -193,7 +193,7 @@ class ServicePersonnelViewTests(TestCase):
 
 
 class ServiceProcedureViewTests(TestCase):
-    fixtures = ['common.json', 'inventory.json']
+    fixtures = ['common.json', 'inventory.json', ]
 
     @classmethod
     def setUpClass(cls):

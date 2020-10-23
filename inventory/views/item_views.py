@@ -58,14 +58,6 @@ class ProductUpdateView(ContextMixin, UpdateView):
     template_name = os.path.join("common_data", "crispy_create_template.html")
     extra_context = {"title": "Update Existing Product"}
 
-    def get_initial(self, *args, **kwargs):
-        initial = super().get_initial(*args, **kwargs)
-        if not self.object:
-            self.get_object()
-        initial['tax'] = self.object.product_component.tax.pk
-        # ignore warehouse it is an optional field for initial inventory
-        return initial
-
 
 class ProductDetailView(ContextMixin, DetailView):
     model = models.InventoryItem
@@ -75,7 +67,7 @@ class ProductDetailView(ContextMixin, DetailView):
         context = super().get_context_data(*args, **kwargs)
         context['graph'] = single_item_composition_plot(
             self.object).render(is_unicode=True)
-        if self.object.product_component:
+        if self.object.type == 0:
             context['history'] = inventory_track_plot(self.object).render(
                 is_unicode=True)
         return context
@@ -111,6 +103,41 @@ class ProductListView(ContextMixin, PaginationMixin, FilterView):
     def get_queryset(self):
         return models.InventoryItem.objects.filter(type=0, active=True).order_by('pk')
 
+class ItemPriceCreateView(ContextMixin, CreateView):
+    template_name = CREATE_TEMPLATE
+    model = models.ItemPrice
+    form_class = forms.ItemPriceForm
+    extra_context = {
+        "title": "Create New Price",   
+    }
+
+
+class ItemPriceListView(ContextMixin, PaginationMixin, FilterView):
+    paginate_by = 20
+    filterset_class = filters.ItemPriceFilter
+    template_name = os.path.join(
+        'inventory', 'item', 'price', 'list.html')
+    extra_context = {
+        "title": "Item Price List",
+        "new_link": reverse_lazy("inventory:create-item-price"),
+    }
+    def get_queryset(self):
+        return models.ItemPrice.objects.all()
+    
+
+class ItemPriceDeleteView(ContextMixin, DeleteView):
+    template_name = os.path.join('common_data', 'delete_template.html')
+    success_url = reverse_lazy('inventory:item-price-list')
+    model = models.ItemPrice
+    
+
+class ItemPriceUpdateView(ContextMixin, UpdateView):
+    template_name = CREATE_TEMPLATE
+    model = models.ItemPrice
+    form_class = forms.ItemPriceForm
+    extra_context = {
+        "title": "Update Price",   
+    }
 
 class ProductCreateView(ContextMixin,
                         CreateView):
@@ -118,9 +145,6 @@ class ProductCreateView(ContextMixin,
     template_name = os.path.join("common_data", "crispy_create_template.html")
     extra_context = {
         "title": "Create New Product",
-        'description': 'Cycle  through the tabs to enter information regarding product description, quantity, dimensions and pricing. ',
-        
-
     }
 
     def get_initial(self):
@@ -216,8 +240,8 @@ class EquipmentUpdateView(ContextMixin,
     def get_initial(self):
         initial = super().get_initial()
         item = models.InventoryItem.objects.get(pk=self.kwargs['pk'])
-        if item.equipment_component and item.equipment_component.asset_data:
-            asset = item.equipment_component.asset_data
+        if item.asset_data:
+            asset = item.asset_data
             initial.update({
                 'record_as_asset': True,
                 'asset_category': asset.category,
@@ -321,7 +345,7 @@ class EquipmentandConsumablesPurchaseView(ContextMixin, CreateView):
             # increment inventory and set purchase price
             item_pk = line['item'].split('-')[0]
             item = models.InventoryItem.objects.get(pk=item_pk)
-            item.unit_purchase_price = line['unit_price']
+            item.set_purchase_price(line['unit_price'])
             item.save()
             warehouse.add_item(item, line['quantity'])
 
@@ -447,21 +471,14 @@ class ImportItemsView(ContextMixin, FormView):
                 warehouse = form.cleaned_data['warehouse']
                 warehouse.add_item(item, row[
                     form.cleaned_data['quantity']-1].value)
+                
                 # handle products equipment components
+            
                 if row[form.cleaned_data['type'] - 1].value == 'product':
-                    component = models.ProductComponent.objects.create(
-                        pricing_method=0,
-                        tax=settings.sales_tax,
-                        direct_price=row[
-                            form.cleaned_data['sales_price']-1].value
-                    )
-                    item.product_component = component
-                    item.save()
-                elif row[form.cleaned_data['type'] - 1].value == 'equipment':
-                    component = models.EquipmentComponent.objects.create()
-                    item.equipment_component = component
-                    item.save()
-
+                    item.tax=settings.sales_tax
+                    item.set_sales_price(row[form.cleaned_data['sales_price']-1].value)
+                    
+                item.save()
         return resp
 
 

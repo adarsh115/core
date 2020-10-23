@@ -83,8 +83,8 @@ Equipment Details
                                     </div>
                                     <div class="card-body">
                                         <p class="card-text">Owned: {{object.quantity}}</p>
-                                        <p class="card-text">In storage: {{object.equipment_component.in_storage}}</p>
-                                        <p class="card-text">In use: {{object.equipment_component.in_use}}</p>
+                                        <p class="card-text">In storage: {{object.in_storage}}</p>
+                                        <p class="card-text">In use: {{object.in_use}}</p>
                                     </div>
                                 </div>
                             </div>
@@ -125,7 +125,7 @@ Equipment Details
                                                 <th>Actions</th>
                                             </thead>
                                             <tbody style="max-height:200px; overflow-y:auto;">
-                                                {% for l in object.equipment_component.requisitions %}
+                                                {% for l in object.requisitions %}
                                                 <tr>
                                                     <td>{{l.requisition.requested_by}}</td>
                                                     <td>{{l..requisition.work_order}}</td>

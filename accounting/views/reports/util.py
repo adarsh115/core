@@ -20,10 +20,10 @@ def net_profit_calculator(start, end):
         start, end) + purchase_returns
 
     opening_inventory = sum(
-        [D(i.product_component.quantity_on_date(start)) *
-            i.product_component.unit_value
+        [D(i.quantity_on_date(start)) *
+            i.unit_value
          for i in inventory_models.InventoryItem.objects.filter(
-            product_component__isnull=False,
+            type=0,
             active=True)])
 
     closing_inventory = inventory_models.InventoryItem.total_inventory_value()

@@ -24,6 +24,7 @@ from employees.models import Employee
 from common_data.models import Individual, Organization
 import datetime
 from . import models
+from decimal import Decimal as D
 
 # models ommitted UnitOfMeasure OrderItem Category
 VALUATION_OPTIONS = [
@@ -205,14 +206,9 @@ class ItemInitialMixin(forms.Form):
 
 
 class ProductForm(ItemInitialMixin, forms.ModelForm, BootstrapMixin):
-    pricing_method = forms.CharField(widget=forms.NumberInput, required=False)
-    margin = forms.CharField(widget=forms.NumberInput, required=False)
-    markup = forms.CharField(widget=forms.NumberInput, required=False)
-    direct_price = forms.CharField(widget=forms.NumberInput, required=False)
+    
+    unit_purchase_price = forms.CharField(widget=forms.NumberInput, required=False)
     type = forms.CharField(widget=forms.HiddenInput)
-    tax = forms.ModelChoiceField(Tax.objects.all())
-    description = forms.CharField(widget=forms.Textarea(
-        attrs={'rows': 4, 'cols': 15}), required=False)
 
     def __init__(self, *args, **kwargs):
         super(ProductForm, self).__init__(*args, **kwargs)
@@ -224,13 +220,11 @@ class ProductForm(ItemInitialMixin, forms.ModelForm, BootstrapMixin):
                             Div('unit_purchase_price'),
                             Div('tax'),
                             css_class="form-group col-sm-6"),
-                        Column(
-                            HTML("<div id='pricing-widget' style='margin:30px auto;'></div>"), css_class="form-group col-sm-6"),
+                        Column('description', css_class="form-group col-sm-6"),
                     ),
                     'type',  # hidden field
                     HTML('''<hr>
-                    <h5>Description</h5>'''),
-                    'description',
+                    <h5>Detail</h5>'''), 
                     'unit',
                     Row(
                         Column(Div('initial_quantity'),
@@ -261,48 +255,31 @@ class ProductForm(ItemInitialMixin, forms.ModelForm, BootstrapMixin):
         )
 
     class Meta:
-        exclude = 'quantity', 'product_component', 'equipment_component'
+        exclude = 'quantity', 'condition', 'asset_data'
         model = models.InventoryItem
         widgets = {
-            'supplier': Select2Widget(attrs={'data-width': '24rem'})
+            'supplier': Select2Widget(attrs={'data-width': '24rem'}),
+            'description':forms.Textarea(attrs={'rows': 4, 'cols': 15})
         }
 
-    def clean(self, *args, **kwargs):
-        cleaned_data = super().clean(*args, **kwargs)
-        if float(cleaned_data['margin']) >= 1:
-            raise forms.ValidationError('Margin can never be greater than 100%')
 
     def save(self, *args, **kwargs):
         instance = super().save(*args, **kwargs)
-
-        if instance.product_component:
-            component = instance.product_component
-            component.pricing_method = self.cleaned_data['pricing_method']
-            component.direct_price = self.cleaned_data['direct_price']
-            component.margin = self.cleaned_data['margin']
-            component.markup = self.cleaned_data['markup']
-            component.tax = self.cleaned_data['tax']
-
-            instance.product_component.save()
-
-        else:
-            component = models.ProductComponent.objects.create(
-                pricing_method=self.cleaned_data['pricing_method'],
-                direct_price=self.cleaned_data['direct_price'],
-                margin=self.cleaned_data['margin'],
-                markup=self.cleaned_data['markup'],
-                tax=self.cleaned_data['tax']
-            )
-
-            instance.product_component = component
-
-        instance.save()
-
+        
+        if not models.ItemPrice.objects.filter(item=instance, buying=True).exists():
+            models.ItemPrice.objects.create(
+                item=instance, 
+                buying=True,
+                rate=self.cleaned_data['unit_purchase_price'],
+                currency=AccountingSettings.objects.first().active_currency
+                )
         return instance
 
 
 class EquipmentForm(ItemInitialMixin, forms.ModelForm, BootstrapMixin):
     type = forms.CharField(widget=forms.HiddenInput)
+    unit_purchase_price = forms.CharField(widget=forms.NumberInput, required=False)
+
     # asset name will take product equipment name
     # description will take equipment decription
     record_as_asset = forms.BooleanField(required=False)
@@ -313,8 +290,6 @@ class EquipmentForm(ItemInitialMixin, forms.ModelForm, BootstrapMixin):
     date_purchased = forms.DateField(required=False)
     salvage_value = forms.CharField(widget=forms.NumberInput, required=False)
     asset_category = forms.ChoiceField(choices=ASSET_CHOICES, required=False)
-    description = forms.CharField(widget=forms.Textarea(
-        attrs={'rows': 4, 'cols': 15}), required=False)
 
     def __init__(self, *args, **kwargs):
         super(EquipmentForm, self).__init__(*args, **kwargs)
@@ -365,10 +340,11 @@ class EquipmentForm(ItemInitialMixin, forms.ModelForm, BootstrapMixin):
                 )
 
     class Meta:
-        exclude = "maximum_stock_level", "minimum_order_level", "product_component", "equipment_component",
+        exclude = "maximum_stock_level", "minimum_order_level", 'tax', 'sku'
         model = models.InventoryItem
         widgets = {
-            'supplier': Select2Widget(attrs={'data-width': '24rem'})
+            'supplier': Select2Widget(attrs={'data-width': '24rem'}),
+            'description': forms.Textarea(attrs={'rows': 4, 'cols': 15})
         }
 
     def clean(self, *args, **kwargs):
@@ -376,11 +352,11 @@ class EquipmentForm(ItemInitialMixin, forms.ModelForm, BootstrapMixin):
         cap_limit = \
             AccountingSettings.objects.first().equipment_capitalization_limit
         if not cleaned_data['record_as_asset'] and \
-                cleaned_data['unit_purchase_price'] > cap_limit:
+                D(cleaned_data['unit_purchase_price']) > cap_limit:
             raise forms.ValidationError(
                 """The purchase price for this equipment is above the capitalization limit, either adjust this limit in the accouting settings or record this equipment as an asset.""")
         elif cleaned_data['record_as_asset'] and \
-                cleaned_data['unit_purchase_price'] < cap_limit:
+                D(cleaned_data['unit_purchase_price']) < cap_limit:
             raise forms.ValidationError(
                 """The purchase price for this equipment is below the capitalization limit so it cannot be recorded as an asset.""")
 
@@ -410,10 +386,9 @@ class EquipmentForm(ItemInitialMixin, forms.ModelForm, BootstrapMixin):
             )
 
         if self.cleaned_data['record_as_asset']:
-            if instance.equipment_component and \
-                    instance.equipment_component.asset_data:
+            if instance.asset_data:
                 # edit each field
-                asset = instance.equipment_component.asset_data
+                asset = instance.asset_data
                 asset.name = instance.name
                 asset.description = instance.description
                 asset.category = AssetCategory.objects.get(pk=self.cleaned_data['asset_category'])
@@ -422,35 +397,19 @@ class EquipmentForm(ItemInitialMixin, forms.ModelForm, BootstrapMixin):
                 asset.salvage_value = self.cleaned_data['salvage_value']
                 asset.depreciation_period = self.cleaned_data['depreciation_period']
                 asset.save()
-                instance.equipment_component.asset = asset
-                instance.equipment_component.save()
+                instance.asset = asset
 
-            elif instance.equipment_component and \
-                    instance.equipment_component.asset_data is None:
+            elif instance.asset_data is None:
                 # create asset
                 asset = create_asset()
-                instance.equipment_component.asset_data = asset
-                instance.equipment_component.save()
+                instance.asset = asset
 
-            elif instance.equipment_component is None:
-                # create component and asset
-                asset = create_asset()
-                instance.equipment_component = \
-                    models.EquipmentComponent.objects.create(
-                        asset_data=asset
-                    )
-        else:
-            if instance.equipment_component is None:
-                instance.equipment_component = \
-                    models.EquipmentComponent.objects.create()
         instance.save()
         return instance
 
 
 class ConsumableForm(ItemInitialMixin, forms.ModelForm, BootstrapMixin):
     type = forms.CharField(widget=forms.HiddenInput, )
-    description = forms.CharField(widget=forms.Textarea(
-        attrs={'rows': 4, 'cols': 15}), required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -491,10 +450,11 @@ class ConsumableForm(ItemInitialMixin, forms.ModelForm, BootstrapMixin):
                 )
 
     class Meta:
-        exclude = 'quantity', 'product_component', 'equipment_component',
+        exclude = 'quantity', 'tax', 'sku', 'condition', 'asset_data'
         model = models.InventoryItem
         widgets = {
-            'supplier': Select2Widget(attrs={'data-width': '24rem'})
+            'supplier': Select2Widget(attrs={'data-width': '24rem'}),
+            'description':forms.Textarea(attrs={'rows': 4, 'cols': 15})
         }
 
 
@@ -564,6 +524,12 @@ class OrderPaymentForm(forms.ModelForm, BootstrapMixin):
     class Meta:
         exclude = "entry",
         model = models.OrderPayment
+
+
+class ItemPriceForm(forms.ModelForm, BootstrapMixin):
+    class Meta:
+        fields = "__all__"
+        model = models.ItemPrice
 
 
 class StockReceiptForm(forms.ModelForm, BootstrapMixin):

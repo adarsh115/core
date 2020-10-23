@@ -69,6 +69,18 @@ equipment_urls = [
             views.EquipmentDetailView.as_view(), name="equipment-detail"),
 ] + equipment_router.urls
 
+
+item_price_urls = [
+    re_path(r'^item-price-create/?$', views.ItemPriceCreateView.as_view(),
+            name="create-item-price"),
+    re_path(r'^item-price-list/?$', views.ItemPriceListView.as_view(),
+            name="item-price-list"),
+    re_path(r'^update-item-price/(?P<pk>[\w]+)/?$',
+            views.ItemPriceUpdateView.as_view(), name="update-item-price"),
+    re_path(r'^delete-item-price/(?P<pk>[\w]+)/?$',
+            views.ItemPriceDeleteView.as_view(), name="delete-item-price"),
+]
+
 item_urls = [
     path('import-items-from-excel/', views.ImportItemsView.as_view(),
          name='import-items-from-excel'),
@@ -77,4 +89,5 @@ item_urls = [
     path('api/items-excluding-products/',
          views.ItemsExcludingProducts.as_view(),
          )
-] + product_urls + equipment_urls + consumable_urls + raw_material_urls
+] + product_urls + equipment_urls + consumable_urls + raw_material_urls + \
+        item_price_urls

@@ -24,7 +24,7 @@ from django.http import HttpResponseRedirect
 import openpyxl
 from django.contrib import messages
 from services.models import Service
-from inventory.models import InventoryItem, ProductComponent, UnitOfMeasure
+from inventory.models import InventoryItem, UnitOfMeasure
 from accounting.models import Expense, Account
 
 
@@ -436,11 +436,9 @@ class ImportInvoiceFromExcelView(ContextMixin, FormView):
                             type=0,
                             description=desc,
                             unit=unit,
-                            product_component=ProductComponent.objects.create(
-                                pricing_method=0,
-                                direct_price=unit_price,
-                                tax=form.cleaned_data['sales_tax']
-                            ))
+                            tax=form.cleaned_data['sales_tax']
+                            )
+                        item.set_sales_price(unit_price)
 
                     component = ProductLineComponent.objects.create(
                         product=item,

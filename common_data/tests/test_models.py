@@ -104,12 +104,21 @@ def create_account_models(cls):
         billable=False,
         debit_account=cls.account_d,
     )
+
+    cls.currency = Currency.objects.create(
+        name='curr',
+        symbol='c'
+    )
+
     if AccountingSettings.objects.all().count() == 0:
         cls.config = AccountingSettings.objects.create(
             # start_of_financial_year = TODAY
+            
         )
     else:
         cls.config = AccountingSettings.objects.first()
+        cls.config.active_currency=Currency.objects.first()
+        cls.config.save()
 
     cls.config.equipment_capitalization_limit = 10
     cls.config.save()

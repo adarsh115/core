@@ -41,11 +41,11 @@ class ProductEntry extends Component{
             //tax 
             let taxString
             let tax = document.getElementById('product-tax');
-            if(res.data.product_component.tax){
-                tax.value = res.data.product_component.tax.id;
-                taxString = res.data.product_component.tax.id + ' - ' + 
-                    res.data.product_component.tax.name + '@' +
-                    res.data.product_component.tax.rate
+            if(res.data.tax){
+                tax.value = res.data.tax.id;
+                taxString = res.data.tax.id + ' - ' + 
+                    res.data.tax.name + '@' +
+                    res.data.tax.rate
             }else{
                 taxString = '1 - None@0'
                 tax.value = "1"

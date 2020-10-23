@@ -34,7 +34,7 @@ class EntryWidget extends Component{
            method: 'GET',
            url: `/inventory/api/product/${data.selected}`
        }).then(res => {
-            const tax_rate = res.data.product_component.tax ? parseFloat(res.data.product_component.tax.rate) : null
+            const tax_rate = res.data.tax ? parseFloat(res.data.tax.rate) : null
             const tax_amount = tax_rate ? parseFloat(res.data.unit_sales_price) * (tax_rate / 100.0) : 0.00
             const subtotal = parseFloat(res.data.unit_sales_price) + parseFloat(tax_amount)
             this.setState({
@@ -49,7 +49,7 @@ class EntryWidget extends Component{
                     tax: tax_amount,
                     tax_rate: tax_rate,
                     subtotal: subtotal,
-                    tax_id: res.data.product_component.tax ? res.data.product_component.tax.id : null
+                    tax_id: res.data.tax ? res.data.tax.id : null
                 }
             })
        })

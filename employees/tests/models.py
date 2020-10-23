@@ -10,7 +10,7 @@ from invoicing.models import (SalesRepresentative,
                               InvoiceLine,
                               ProductLineComponent
                               )
-from inventory.models import InventoryItem, UnitOfMeasure, ProductComponent
+from inventory.models import InventoryItem, UnitOfMeasure
 TODAY = datetime.date.today()
 from planner.models import Event
 
@@ -417,32 +417,30 @@ class PayGradeModelTests(TestCase):
 
 class PaySlipModelTests(TestCase):
     fixtures = ['common.json', 'accounts.json', 'journals.json',
-                'employees.json', 'inventory.json', 'invoicing.json', 'payroll.json']
+                'employees.json', 'inventory.json', 'invoicing.json', 'payroll.json', 'settings.json']
 
     @classmethod
     def setUpTestData(cls):
+        from accounting.tests.model_util import AccountingModelCreator
+
         create_test_employees_models(cls)
         if not hasattr(cls, 'user'):
             cls.user = User.objects.create_superuser('Testuser',
                                                      'admin@test.com', '123')
             cls.user.save()
 
-        pc = ProductComponent.objects.create(
-            pricing_method=0,  # KISS direct pricing
-            direct_price=10,
-            margin=0.5,
-        )
+        AccountingModelCreator(cls).create_all()
 
         cls.product = InventoryItem.objects.create(
             name='test name',
             unit=UnitOfMeasure.objects.first(),
-            unit_purchase_price=10,
             description='Test Description',
             minimum_order_level=0,
             maximum_stock_level=20,
             type=0,
-            product_component=pc
         )
+
+        cls.product.set_purchase_price(10)
 
     def test_create_pay_slip(self):
         obj = Payslip.objects.create(

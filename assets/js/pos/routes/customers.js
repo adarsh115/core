@@ -20,19 +20,18 @@ const customerModal = (props) => {
                         method: 'GET',
                         url: '/invoicing/api/customer/' + data.selected
                     }).then(res => {
-                        console.log(res.data)
                         setCustomer(res.data)
                     })
                 }}/>
                 <br/>
             <div style={{display:'flex', width: '100%'}}>
                 <div style={{flex: 1}}>
-                    <p><b>Type:</b> {customer ? customer.contact.type : ""}</p>
-                    <p><b>Phone:</b> {customer ? customer.contact.phone : ""}</p>
-                    <p><b>Email:</b> {customer ? customer.contact.email : ""}</p>
+                    <p><b>Type:</b> {customer ? customer.customer_type : ""}</p>
+                    <p><b>Phone:</b> {customer ? customer.phone_1 : ""}</p>
+                    <p><b>Email:</b> {customer ? customer.email : ""}</p>
                 </div>
                 <div style={{flex: 1}}>
-                    <p><b>Address:</b> {customer ? customer.contact.address : ""}</p>
+                    <p><b>Address:</b> {customer ? customer.physical_address : ""}</p>
                 </div>
             </div>
         </Modal>

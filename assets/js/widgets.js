@@ -2,7 +2,6 @@ import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
 import TreeSelectWidget from '../js/src/tree_select_widget';
 import axios from '../js/src/auth';
-import PricingWidget from "../js/inventory/pricing_widget";
 import {ImgPreview} from '../js/src/common';
 import StepsWidget from '../js/src/steps/container/root';
 
@@ -11,7 +10,6 @@ const category = document.getElementById('category-select-widget');
 const categoryView = document.getElementById('category-tree-view');
 const storageMediaView = document.getElementById('storage-media-tree-view');
 const testView = document.getElementById('test');
-const pricing = document.getElementById('pricing-widget');
 const depts = document.getElementById('department-list');
 const avatar = document.getElementById('avatar-preview');
 const dataMapper = (node, i) =>{
@@ -64,8 +62,6 @@ if(storageMedia){
         dataMapper={dataMapper}/>, storageMediaView);
 }else if(testView){
     ReactDOM.render(<StepsWidget />, testView);
-}else if(pricing){
-    ReactDOM.render(<PricingWidget />, pricing);
 }else if(depts){
     ReactDOM.render(<TreeSelectWidget 
         isListView={true}

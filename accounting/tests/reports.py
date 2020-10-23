@@ -18,7 +18,6 @@ from inventory.models import (WareHouse,
                               Supplier,
                               Category,
                               InventoryItem,
-                              ProductComponent,
                               Order,
                               OrderItem,
                               DebitNote)
@@ -32,6 +31,7 @@ from accounting.models import (Account,
                                AssetCategory,
                                Journal,
                                JournalEntry)
+from accounting.tests.model_util import AccountingModelCreator
 
 from invoicing.tests.model_util import InvoicingModelCreator
 from inventory.tests.model_util import InventoryModelCreator
@@ -54,7 +54,8 @@ class ReportTests(TestCase):
 
         InventoryModelCreator(cls).create_all()
         InvoicingModelCreator(cls).create_all()
-        cls.product.unit_purchase_price = 0
+        AccountingModelCreator(cls).create_all()
+        cls.product.set_purchase_price(0)
         cls.product.save()
 
         cls.asset = Asset.objects.create(

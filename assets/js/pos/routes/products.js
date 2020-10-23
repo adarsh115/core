@@ -32,7 +32,7 @@ const productModal = (props) => {
                 </div>
                 <div style={{flex: 1}}>
                     <p><b>Quantity:</b> {product ? product.qty : ""}</p>
-                    <p><b>Tax:</b> {product && product.product_component.tax ? product.product_component.tax.name : ""}</p>
+                    <p><b>Tax:</b> { product && product.tax ? product.tax.name : ""}</p>
                 </div>
             </div>
         </Modal>
