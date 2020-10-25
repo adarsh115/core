@@ -251,7 +251,7 @@ class Invoice(SoftDeletionModel):
         return sum([i.subtotal for i in self.invoiceline_set.all()])
 
     def __str__(self):
-        return 'INV' + str(self.pk)
+        return 'INV-%0.6d' % self.pk
 
     @property
     def quotation_is_valid(self):

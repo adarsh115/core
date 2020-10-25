@@ -100,7 +100,7 @@ class Order(SoftDeletionModel):
         return (float(self.total_shipping_costs) / float(self.total)) * 100.0
 
     def __str__(self):
-        return 'ORD' + str(self.pk)
+        return 'ORD-%0.6d' % self.pk
 
     @property
     def days_overdue(self):

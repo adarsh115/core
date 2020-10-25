@@ -41,7 +41,7 @@
                         <div>
                             <p><b>{{object.sku_set.first.attribute}}</b></p>
                             {% for sku in object.sku_set.all %}
-                                <p><input type="radio" name="product_sku" id="" value="{{sku.pk}}" {% if forloop.counter == 1 %}checked{% endif %} >{{sku.value}}</p>
+                                <p><input type="radio" name="product_sku" id="" value="{{sku.pk}}" {% if forloop.counter == 1 %}checked{% endif %} >{{sku.value}} </p>
                             {% endfor %}
                         </div>
                     </div>

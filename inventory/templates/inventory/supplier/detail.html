@@ -53,12 +53,14 @@ Vendor Details
                     <nav class="nav nav-tabs nav-stacled">
                         <a href="#members" class="nav-link active" data-toggle="tab">Contacts</a></li>
 
-                        <a href="#invoices" class="nav-link " data-toggle="tab">Products</a>
-                        <a href="#quotations" class="nav-link" data-toggle="tab">Consumables</a>
-                        <a href="#credit-notes" class="nav-link" data-toggle="tab">Equipment</a>
+                        <a href="#products" class="nav-link " data-toggle="tab">Products</a>
+                        <a href="#consumables" class="nav-link" data-toggle="tab">Consumables</a>
+                        <a href="#equipment" class="nav-link" data-toggle="tab">Equipment</a>
+                        <a href="#orders" class="nav-link" data-toggle="tab">Orders</a>
+
                     </nav>
                     <div class="tab-content panel-body">
-                        <div id="invoices" class="tab-pane">
+                        <div id="products" class="tab-pane">
                             <table class="table table-sm">
                                 <thead>
                                     <tr>
@@ -79,7 +81,27 @@ Vendor Details
                                 </tbody>
                             </table>
                         </div>
-                        <div id="quotations" class="tab-pane">
+                        <div id="orders" class="tab-pane">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Total</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for o in object.order_set.all %}
+                                    <tr>
+                                        <td>{{o}}</td>
+                                        <td>{{o.total | active_currency}}</td>
+                                        <td>{{o.date}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="consumables" class="tab-pane">
                             <table class="table table-sm">
                                 <thead>
                                     <tr>
@@ -100,7 +122,7 @@ Vendor Details
                                 </tbody>
                             </table>
                         </div>
-                        <div id="credit-notes" class="tab-pane">
+                        <div id="equipment" class="tab-pane">
                             <table class="table table-sm">
                                 <thead>
                                     <tr>
@@ -117,6 +139,8 @@ Vendor Details
                                         <td><a href="{% url 'inventory:equipment-detail' pk=p.pk %}"
                                                 class="btn btn-primary">Detail</a></td>
                                     </tr>
+
+
                                     {% endfor %}
                                 </tbody>
                             </table>

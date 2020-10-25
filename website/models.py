@@ -102,15 +102,15 @@ class SKU(models.Model):
     sku_id = models.CharField(max_length=64)
     attribute = models.CharField(max_length=255)
     value  = models.CharField(max_length=255)
-    product = models.ForeignKey('inventory.InventoryItem', on_delete=models.CASCADE)
+    product = models.ForeignKey('inventory.InventoryItem', on_delete=models.CASCADE, related_name="+")
     quantity = models.IntegerField(default=0)
+
 
     def __str__(self):
         return self.sku_id
 
     class Meta:
         verbose_name_plural = "SKU"
-
 
 class Order(models.Model):
     STATUS_OPTIONS = [
