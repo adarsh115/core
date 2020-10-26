@@ -31,7 +31,8 @@ def create_test_inventory_models(cls):
         )
 
     cls.supplier = models.Supplier.objects.create(
-        organization=cls.organization,
+        supplier_type="organization",
+        supplier_name='supp lier',
         account=cls.account_c
     )
 
@@ -200,26 +201,11 @@ class CommonModelTests(TestCase):
         self.assertIsInstance(self.controller, models.InventoryController)
 
     def test_create_supplier(self):
-        ind = Individual.objects.create(
-            first_name="Test",
-            last_name="individual"
-        )
         obj = models.Supplier.objects.create(
-            individual=ind
+            supplier_type='individual',
+            supplier_name='supp lier'
         )
         self.assertIsInstance(obj, models.Supplier)
-
-    def test_supplier_name(self):
-        self.assertIsInstance(self.supplier.name, str)
-
-    def test_supplier_is_organization(self):
-        self.assertTrue(self.supplier.is_organization)
-
-    def test_supplier_email(self):
-        self.assertIsInstance(self.supplier.email, str)
-
-    def test_supplier_address(self):
-        self.assertIsInstance(self.supplier.address, str)
 
     def test_create_unit_of_measure(self):
         obj = models.UnitOfMeasure.objects.create(

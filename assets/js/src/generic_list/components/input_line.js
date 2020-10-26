@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {AsyncSelect } from '../../common';
-import SearchableWidget from "../../components/searchable_widget";
+import SelectThree from "../../select_3";
 import styles from './styles.css'
 
 /* fieldOrder - array of strings 
@@ -73,6 +73,18 @@ class inputLine extends Component{
     }
     searchHandler = (name, value) =>{
         //for searchable widget and asyncwidget
+        console.log(value)
+        let newData = {...this.state.data};
+        newData[name] = value.inputVal;
+        this.setState({
+            data: newData,
+            selectedPk: value.selected,
+            isReset: false
+        });
+    }
+
+    selectHandler = (name, value) =>{
+        //for searchable widget and asyncwidget
         let newData = {...this.state.data};
         newData[name] = value;
         const pk = value.split('-')[0];
@@ -100,14 +112,13 @@ class inputLine extends Component{
                     this.setState({fetchField: field})
                 }
                 return <span>{this.state.data[field.name]}</span>;
-                break;
+                
             case 'select':
                 return <AsyncSelect 
                     resetFlag={this.state.isReset}
-                    handler={(val) => this.searchHandler(field.name, val)}
+                    handler={(val) => this.selectHandler(field.name, val)}
                     resProcessor={this.asyncResProcessor}
                     dataURL={field.url}/>
-                break;
             case 'text':
                 //controlled without a reset flag
                 return <input 
@@ -116,8 +127,7 @@ class inputLine extends Component{
                         onChange={this.inputHandler}
                         name={field.name}
                         value={this.state.data[field.name]}
-                        />;    
-                    break;
+                        />; 
             case 'date':
                 //controlled without a resetFlag
                 return <input 
@@ -126,8 +136,7 @@ class inputLine extends Component{
                         onChange={this.inputHandler}
                         name={field.name}
                         value={this.state.data[field.name]}
-                        />;    
-                    break;
+                        />;   
             case 'number':
                 //controlled without a reset flag
                 return <input 
@@ -137,28 +146,20 @@ class inputLine extends Component{
                     name={field.name}
                     value={this.state.data[field.name]}
                     />;
-                break;
             case 'search': 
-                return <SearchableWidget 
-                    resetFlag={this.state.isReset}
-                    list={this.props.lines}
-                    dataURL={field.url}
-                    idField={field.idField}
+                return <SelectThree 
+                    toggleClear={this.state.isReset}
                     model={field.model}
                     app={field.app}
-                    canCreateNewItem={field.canCreateNewItem}
-                    displayField={field.displayField}
-                    newLink={field.newLink}
                     onSelect={(val) => this.searchHandler(field.name, val)}
-                    onClear={() => this.searchHandler(field.name, "")}/>
-                break;
+                    onClear={this.searchClearHandler}/>
+
 
             case 'widget':
                 // function that takes the component as 
                 // an argument so it can independantly set state etc.
                 //each widget must implement the reset flag
                 return field.widgetCreator(this);
-                break;
             default:
                 return null;
         }

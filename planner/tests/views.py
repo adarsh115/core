@@ -91,11 +91,13 @@ class PlannerViewTests(TestCase):
         )
 
         cls.supplier = Supplier.objects.create(
-            organization=cls.organization
+            supplier_type='organization',
+            supplier_name="supp lier"
         )
 
         cls.customer = Customer.objects.create(
-            organization=cls.organization
+            customer_type='organization',
+            customer_name="supp lier"
         )
         cls.employee.user = cls.usr
         cls.employee.save()

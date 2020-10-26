@@ -146,7 +146,8 @@ const SelectField = (props) => (
     <div className="form-group">
         <label>{props.label}:</label>
         <select className="form-control form-control-sm"
-            onChange={evt => props.onEvt(evt.target.value)}>
+            onChange={evt => props.onEvt(props.name, evt.target.value)}>
+            <option>--------</option>
             {props.options.map(opt => <option value={opt[0]}>{opt[1]}</option>)}
         </select>
     </div>

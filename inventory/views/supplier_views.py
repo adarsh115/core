@@ -22,7 +22,7 @@ from invoicing.models import SalesConfig
 import openpyxl
 
 
-class SupplierCreateView(ContextMixin, FormView):
+class SupplierCreateView(ContextMixin, CreateView):
     form_class = forms.SupplierForm
     template_name = os.path.join('inventory', 'supplier', 'create.html')
     extra_context = {
@@ -37,167 +37,17 @@ class SupplierCreateView(ContextMixin, FormView):
             'vendor_type': 'organization'
         }
 
-    def form_valid(self, form, *args, **kwargs):
-        resp = super().form_valid(form, *args, **kwargs)
 
-        if form.cleaned_data['vendor_type'] == "individual":
-            names = form.cleaned_data['name'].split(' ')
-            individual = Individual.objects.create(
-                # for those with multiple first names
-                first_name=" ".join(names[:-1]),
-                last_name=names[-1],
-                address=form.cleaned_data['address'],
-                email=form.cleaned_data['email'],
-                phone=form.cleaned_data['phone_1'],
-                phone_two=form.cleaned_data['phone_2'],
-                photo=form.cleaned_data['image'],
-                other_details=form.cleaned_data['other_details'],
-                organization=form.cleaned_data['organization']
-            )
-            models.Supplier.objects.create(
-                individual=individual,
-                billing_address=form.cleaned_data['billing_address'],
-                banking_details=form.cleaned_data['banking_details']
-            )
-        else:
-            org = Organization.objects.create(
-                legal_name=form.cleaned_data['name'],
-                business_address=form.cleaned_data['address'],
-                website=form.cleaned_data['website'],
-                bp_number=form.cleaned_data['business_partner_number'],
-                email=form.cleaned_data['email'],
-                phone=form.cleaned_data['phone_1'],
-                logo=form.cleaned_data['image']
-            )
-            models.Supplier.objects.create(
-                organization=org,
-                billing_address=form.cleaned_data['billing_address'],
-                banking_details=form.cleaned_data['banking_details']
-            )
-
-        return resp
-
-
-class SupplierUpdateView(ContextMixin, FormView):
+class SupplierUpdateView(ContextMixin, UpdateView):
     form_class = forms.SupplierForm
     template_name = os.path.join('inventory', 'supplier', 'create.html')
     extra_context = {"title": "Update Existing Vendor"}
+    model = models.Supplier
 
     def get_success_url(self):
         return reverse('inventory:supplier-detail',
                        kwargs={'pk': self.kwargs['pk']
                                })
-
-    def get_initial(self):
-        vendor = models.Supplier.objects.get(pk=self.kwargs['pk'])
-        if vendor.is_organization:
-            org = vendor.organization
-            return {
-                'vendor_type': 'organization',
-                'name': org.legal_name,
-                'address': org.business_address,
-                'billing_address': vendor.billing_address,
-                'banking_details': vendor.banking_details,
-                'email': org.email,
-                'phone_1': org.phone,
-                'image': org.logo,
-                'website': org.website,
-                'business_partner_number': org.bp_number
-            }
-        else:
-            ind = vendor.individual
-            return {
-                'vendor_type': 'individual',
-                'name': ind.first_name + " " + ind.last_name,
-                'address': ind.address,
-                'billing_address': vendor.billing_address,
-                'banking_details': vendor.banking_details,
-                'email': ind.email,
-                'phone_1': ind.phone,
-                'phone_2': ind.phone_two,
-                'image': ind.photo,
-                'other_details': ind.other_details,
-                'organization': ind.organization
-            }
-
-    def form_valid(self, form):
-        resp = super().form_valid(form)
-        vendor = models.Supplier.objects.get(pk=self.kwargs['pk'])
-
-        vendor.billing_address = form.cleaned_data['billing_address']
-        vendor.banking_details = form.cleaned_data['banking_details']
-
-        org = None
-        individual = None
-
-        if vendor.organization and \
-                form.cleaned_data['vendor_type'] == "individual":
-            vendor.organization.delete()
-            org = Organization.objects.create(
-                legal_name=form.cleaned_data['name'],
-                business_address=form.cleaned_data['address'],
-                website=form.cleaned_data['website'],
-                bp_number=form.cleaned_data['business_partner_number'],
-                email=form.cleaned_data['email'],
-                phone=form.cleaned_data['phone_1'],
-                logo=form.cleaned_data['image']
-            )
-            vendor.organization = org
-
-        elif vendor.individual and \
-                form.cleaned_data['vendor_type'] == "organization":
-            vendor.individual.delete()
-            names = form.cleaned_data['name'].split(' ')
-
-            individual = Individual.objects.create(
-                # for those with multiple first names
-                first_name=" ".join(names[:-1]),
-                last_name=names[-1],
-                address=form.cleaned_data['address'],
-                email=form.cleaned_data['email'],
-                phone=form.cleaned_data['phone_1'],
-                phone_two=form.cleaned_data['phone_2'],
-                photo=form.cleaned_data['image'],
-                other_details=form.cleaned_data['other_details'],
-                organization=form.cleaned_data['organization']
-            )
-            vendor.individual = individual
-        else:
-            # if the vendor type hasn't changed
-
-            if form.cleaned_data['vendor_type'] == "individual":
-
-                names = form.cleaned_data['name'].split(' ')
-                # for those with multiple first names
-                individual = vendor.individual
-                individual.first_name = " ".join(names[:-1])
-                individual.last_name = names[-1]
-                individual.address = form.cleaned_data['address']
-                individual.email = form.cleaned_data['email']
-                individual.phone = form.cleaned_data['phone_1']
-                individual.phone_two = form.cleaned_data['phone_2']
-                individual.photo = form.cleaned_data['image']
-                individual.other_details = form.cleaned_data['other_details']
-                individual.organization = form.cleaned_data['organization']
-
-                individual.save()
-                vendor.individual = individual
-
-            else:
-                organization = vendor.organization
-                organization.legal_name = form.cleaned_data['name']
-                organization.business_address = form.cleaned_data['address']
-                organization.website = form.cleaned_data['website']
-                organization.bp_number = \
-                    form.cleaned_data['business_partner_number']
-                organization.email = form.cleaned_data['email']
-                organization.phone = form.cleaned_data['phone_1']
-                organization.logo = form.cleaned_data['image']
-                organization.save()
-
-        vendor.save()
-
-        return resp
 
 
 class SupplierListView(ContextMixin,
@@ -272,14 +122,11 @@ class CreateMultipleSuppliersView(FormView):
         settings = SalesConfig.objects.first()
 
         for line in data:
-            org = Organization.objects.create(
-                legal_name=line['name'],
+            sup = models.Supplier.objects.create(
+                supplier_name=line['name'],
                 business_address=line['address'],
                 email=line['email'],
-                phone=line['phone'],
-            )
-            sup = models.Supplier.objects.create(
-                organization=org
+                phone_1=line['phone'],
             )
             if line['account_balance']:
                 sup.account.balance = line['account_balance']

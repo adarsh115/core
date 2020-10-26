@@ -9,9 +9,6 @@ class UnitSerializer(serializers.ModelSerializer):
         model = UnitOfMeasure
         fields = ['id', 'name']
 
-
-
-
 class InventoryItemSerializer(serializers.ModelSerializer):
     unit_sales_price = serializers.ReadOnlyField()
     unit = UnitSerializer(many=False)

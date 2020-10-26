@@ -40,11 +40,13 @@ class PlannerModelTests(TestCase):
         )
 
         cls.supplier = Supplier.objects.create(
-            organization=cls.organization
+            supplier_type='organization',
+            supplier_name = 'supp lier'
         )
 
         cls.customer = Customer.objects.create(
-            organization=cls.organization
+            customer_type='organization',
+            customer_name = 'supp lier'
         )
 
     def setUp(self):

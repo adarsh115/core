@@ -69,31 +69,17 @@ class ConfigForm(forms.ModelForm, BootstrapMixin):
         self.helper.add_input(Submit('submit', 'Submit'))
 
 
-class SupplierForm(BootstrapMixin, forms.Form):
-    vendor_type = forms.ChoiceField(widget=forms.RadioSelect, choices=[
-        ('individual', 'Individual'),
-        ('organization', 'Organization')
-    ], required=True)
-    name = forms.CharField()
-    address = forms.CharField(widget=forms.Textarea(attrs={'rows': 4, 'cols': 15}),
-                              required=False)
-    billing_address = forms.CharField(widget=forms.Textarea(attrs={'rows': 4, 'cols': 15}),
-                                      required=False)
-    banking_details = forms.CharField(widget=forms.Textarea(attrs={'rows': 4, 'cols': 15}),
-                                      required=False)
-    email = forms.EmailField(required=False)
-    organization = forms.ModelChoiceField(Organization.objects.all(),
-                                          required=False)
-
-    billing_currency = forms.ModelChoiceField(Currency.objects.all()) 
-    phone_1 = forms.CharField(required=False)
-    phone_2 = forms.CharField(required=False)
-    image = forms.ImageField(required=False)
-    website = forms.CharField(required=False)
-    business_partner_number = forms.CharField(required=False)
-
-    other_details = forms.CharField(widget=forms.Textarea(attrs={'rows': 4, 'cols': 15}),
-                                    required=False)
+class SupplierForm(forms.ModelForm, BootstrapMixin):
+    class Meta:
+        model = models.Supplier
+        exclude = "account", "individual"
+        widgets = {
+            'supplier_type': forms.RadioSelect,
+            'other_details': forms.Textarea(attrs={'rows': 4, 'cols': 15}),
+            'business_address': forms.Textarea(attrs={'rows': 4, 'cols': 15}),
+            'banking_details': forms.Textarea(attrs={'rows': 4, 'cols': 15}),
+            'billing_address': forms.Textarea(attrs={'rows': 4, 'cols': 15})
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -101,15 +87,15 @@ class SupplierForm(BootstrapMixin, forms.Form):
         self.helper.layout = Layout(
             
                     Row(
-                        Column('vendor_type', css_class='form-group col-3'),
-                        Column('name', css_class='form-group col-9'),
+                        Column('supplier_type', css_class='form-group col-3'),
+                        Column('supplier_name', css_class='form-group col-9'),
                     ),
                     'email',
                     'phone_1',
                     'billing_currency',
                     Row(
                         Column(
-                            'address', css_class='form-group col-md-6 col-sm-12'),
+                            'business_address', css_class='form-group col-md-6 col-sm-12'),
                         Column('banking_details',
                                css_class='form-group col-md-6 col-sm-12'),
                     ),
@@ -117,7 +103,10 @@ class SupplierForm(BootstrapMixin, forms.Form):
                     <h5>Description</h5>'''),
                     'phone_2',
                     'website',
-                    'image',
+                    Row(
+                        Column('photo', css_class="col-sm-12 col-md-6"),
+                        Column('logo', css_class="col-sm-12 col-md-6")
+                    ),
                     'billing_address',
                     'organization',
                     'other_details',
@@ -127,49 +116,12 @@ class SupplierForm(BootstrapMixin, forms.Form):
     def clean(self, *args, **kwargs):
         cleaned_data = super().clean(*args, **kwargs)
 
-        if cleaned_data['vendor_type'] == "individual":
-            if " " not in cleaned_data['name']:
+        if cleaned_data['supplier_type'] == "individual":
+            if " " not in cleaned_data['supplier_name']:
                 raise forms.ValidationError(
                     'The vendor name must have both a first and last name separated by a space.')
 
         return cleaned_data
-
-    def save(self):
-        cleaned_data = self.clean()
-        if cleaned_data['vendor_type'] == "individual":
-            names = cleaned_data['name'].split(' ')
-            individual = Individual.objects.create(
-                # for those with multiple first names
-                first_name=" ".join(names[:-1]),
-                last_name=names[-1],
-                address=cleaned_data['address'],
-                email=cleaned_data['email'],
-                phone=cleaned_data['phone_1'],
-                phone_two=cleaned_data['phone_2'],
-                photo=cleaned_data['image'],
-                other_details=cleaned_data['other_details'],
-                organization=cleaned_data['organization']
-            )
-            models.Supplier.objects.create(
-                individual=individual,
-                billing_address=cleaned_data['billing_address'],
-                banking_details=cleaned_data['banking_details']
-            )
-        else:
-            org = Organization.objects.create(
-                legal_name=cleaned_data['name'],
-                business_address=cleaned_data['address'],
-                website=cleaned_data['website'],
-                bp_number=cleaned_data['business_partner_number'],
-                email=cleaned_data['email'],
-                phone=cleaned_data['phone_1'],
-                logo=cleaned_data['image']
-            )
-            models.Supplier.objects.create(
-                organization=org,
-                billing_address=cleaned_data['billing_address'],
-                banking_details=cleaned_data['banking_details']
-            )
 
 
 class ItemInitialMixin(forms.Form):
@@ -514,7 +466,6 @@ class OrderForm(forms.ModelForm, BootstrapMixin):
         widgets = {
             'supplier': Select2Widget
         }
-
 
 
 class OrderPaymentForm(forms.ModelForm, BootstrapMixin):

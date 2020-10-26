@@ -7,7 +7,7 @@ from accounting.models import Account
 from invoicing.models.invoice import Invoice, InvoiceLine
 from invoicing.models.payment import Payment
 from common_data.models import SoftDeletionModel, QuickEntry,Individual, Organization
-
+from django.shortcuts import reverse
 
 class CustomerNote(models.Model):
     customer = models.ForeignKey(
@@ -50,7 +50,9 @@ class Customer(SoftDeletionModel, QuickEntry):
     account = models.ForeignKey('accounting.Account', on_delete=models.CASCADE,
                                 null=True)  # created in save method
 
-    
+    def get_absolute_url(self):
+            return reverse("invoicing:customer-details", kwargs={"pk": self.pk})
+        
 
     @property
     def invoices(self):

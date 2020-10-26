@@ -31,7 +31,8 @@ class InventoryModelCreator():
             create_accounts(self.cls)
 
         self.cls.supplier = models.Supplier.objects.create(
-            organization=self.cls.organization,
+            supplier_type='organization',
+            supplier_name='caleb kandoro',
             account=self.cls.account_c
         )
 

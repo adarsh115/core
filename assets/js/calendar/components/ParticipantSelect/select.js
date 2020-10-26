@@ -25,14 +25,14 @@ class ParticipantSelectWidget extends Component{
                             return({
                                 type: 'supplier',
                                 pk: item.supplier.id,
-                                name: item.supplier.name
+                                name: item.supplier.supplier_name
                             });
                             break;
                         case 1:
                             return({
                                 type: 'customer',
                                 pk: item.customer.id,
-                                name: item.customer.name
+                                name: item.customer.customer_name
                             });
                             break;
                         case 0:

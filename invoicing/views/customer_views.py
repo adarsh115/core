@@ -35,7 +35,7 @@ class CustomerAPIViewSet(viewsets.ModelViewSet):
 
 
 class CustomerCreateView(ContextMixin,
-                         FormView):
+                         CreateView):
     extra_context = {
         "title": "New  Customer",
         'description': 'Add individuals and organizations that buy your'
@@ -45,25 +45,17 @@ class CustomerCreateView(ContextMixin,
     template_name = os.path.join("invoicing", "customer", "create.html")
     form_class = forms.CustomerForm
 
-    def get_success_url(self):
-        return reverse_lazy('invoicing:customer-details', kwargs={
-            'pk': Customer.objects.latest('pk').pk + 1
-        })
 
     def get_initial(self):
         return {
             'customer_type': 'individual'
         }
 
-class CustomerUpdateView(ContextMixin, FormView):
+class CustomerUpdateView(ContextMixin, UpdateView):
     extra_context = {"title": "Update Existing Customer"}
     template_name = os.path.join("invoicing", "customer", "create.html")
     form_class = forms.CustomerForm
-
-    def get_success_url(self):
-        return reverse_lazy('invoicing:customer-details', kwargs={
-            'pk': self.kwargs['pk']
-        })
+    model = Customer
 
    
 class CustomerListView(ContextMixin, PaginationMixin, FilterView):
@@ -139,7 +131,6 @@ class AddCustomerIndividualView(ContextMixin, CreateView):
 class RemoveCustomerIndividualView(DeleteView):
     template_name = os.path.join('common_data', 'delete_template.html')
 
-
 class CreateMultipleCustomersView(FormView):
     template_name = os.path.join('invoicing', 'customer',
                                  'create_multiple.html')
@@ -158,28 +149,20 @@ class CreateMultipleCustomersView(FormView):
         for line in data:
             cus = None
             if line['type'] == 'organization':
-                org = Organization.objects.create(
-                    legal_name=line['name'],
-                    business_address=null_buster(line['address']),
+                cus = Customer.objects.create(
+                    customer_name=line['name'],
+                    customer_type=line['type'],
+                    physical_address=null_buster(line['address']),
                     email=null_buster(line['email']),
                     phone=null_buster(line['phone']),
-                )
-                cus = Customer.objects.create(
-                    organization=org
                 )
             else:
-                names = line['name'].split(' ')
-                ind = Individual.objects.create(
-                    # for those with multiple first names
-                    first_name=" ".join(names[:-1]),
-                    last_name=names[-1],
-                    address=null_buster(line['address']),
+                cus = Customer.objects.create(
+                    customer_name=line['name'],
+                    customer_type=line['type'],
+                    physical_address=null_buster(line['address']),
                     email=null_buster(line['email']),
                     phone=null_buster(line['phone']),
-                )
-
-                cus = Customer.objects.create(
-                    individual=ind
                 )
 
             if line['account_balance']:
@@ -187,7 +170,6 @@ class CreateMultipleCustomersView(FormView):
                 cus.account.save()
 
         return resp
-
 
 class ImportCustomersView(ContextMixin, FormView):
     extra_context = {
@@ -230,34 +212,27 @@ class ImportCustomersView(ContextMixin, FormView):
                                     max_col=max(cols)):
                 cus = None
                 if row[form.cleaned_data['type']-1].value == 0:
-                    org = Organization.objects.create(
-                        legal_name=row[form.cleaned_data['name']-1].value,
-                        business_address=null_buster(
+                    
+                    cus = Customer.objects.create(
+                        customer_name=row[form.cleaned_data['name']-1].value,
+                        customer_type="organization",
+                        physical_address=null_buster(
                             row[form.cleaned_data['address']-1].value),
                         email=null_buster(
                             row[form.cleaned_data['email']-1].value),
                         phone=null_buster(
                             row[form.cleaned_data['phone']-1].value),
                     )
-                    cus = Customer.objects.create(
-                        organization=org
-                    )
                 else:
-                    names = row[form.cleaned_data['name']-1].value.split(' ')
-                    ind = Individual.objects.create(
-                        # for those with multiple first names
-                        first_name=" ".join(names[:-1]),
-                        last_name=names[-1],
+                    cus = Customer.objects.create(
+                        customer_type="organization",
+                        customer_name=row[form.cleaned_data['name']-1].value,
                         address=null_buster(
                             row[form.cleaned_data['address']-1].value),
                         email=null_buster(
                             row[form.cleaned_data['email']-1].value),
                         phone=null_buster(
                             row[form.cleaned_data['phone']-1].value),
-                    )
-
-                    cus = Customer.objects.create(
-                        individual=ind
                     )
 
                     if row[form.cleaned_data['account_balance'] - 1].value:

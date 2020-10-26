@@ -64,7 +64,6 @@ class QuickEntry(models.Model):
         fields = []
         for key, value in _fields.items():
             name = key
-            print(type(value))
             if isinstance(value, models.BooleanField):
                 options = ""
                 fieldtype = "bool"
@@ -82,8 +81,12 @@ class QuickEntry(models.Model):
             if isinstance(value, models.DecimalField) or \
                     isinstance(value, models.IntegerField) or \
                     isinstance(value, models.FloatField):
-                options = ""
-                fieldtype="number"
+                if value.choices:
+                    options = value.choices
+                    fieldtype = "select"
+                else:
+                    options = ""
+                    fieldtype="number"
 
             if isinstance(value, models.TextField):
                 options = ""
@@ -102,7 +105,6 @@ class QuickEntry(models.Model):
                 'options': options,
             })
 
-        print(fields)
         return fields
 
 

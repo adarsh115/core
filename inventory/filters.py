@@ -30,8 +30,8 @@ class SupplierFilter(django_filters.FilterSet):
     class Meta:
         model = Supplier
         fields = {
-            'organization': ['exact'],
-            'individual': ['exact']
+            'supplier_name': ['icontains'],
+            'supplier_type': ['exact']
         }
 
 

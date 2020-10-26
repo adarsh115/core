@@ -214,7 +214,7 @@ class TransactionByVendorReportView(ContextMixin, ConfigMixin, TemplateView):
         vendors = models.Supplier.objects.all()
 
         context["vendors"] = [{
-            'name': v.name,
+            'name': v.supplier_name,
             'transactions': sorted(list(Credit.objects.filter(
                 account=v.account,
                 entry__date__gte=start,

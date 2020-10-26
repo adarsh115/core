@@ -354,7 +354,8 @@ class CustomerViewsTests(TestCase):
 
     def test_post_customer_delete_page(self):
         cus = Customer.objects.create(
-            organization=self.organization,
+            customer_name="cus tomer",
+            customer_type="organization",
             billing_address="Test address",
             banking_details="test details"
         )

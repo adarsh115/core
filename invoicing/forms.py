@@ -61,7 +61,11 @@ class CustomerForm(forms.ModelForm, BootstrapMixin):
         model = models.Customer
         exclude = "account",
         widgets = {
-            'customer_type': forms.RadioSelect
+            'customer_type': forms.RadioSelect,
+            'other_details': forms.Textarea(attrs={'rows': 4, 'cols': 15}),
+            'physical_address': forms.Textarea(attrs={'rows': 4, 'cols': 15}),
+            'banking_details': forms.Textarea(attrs={'rows': 4, 'cols': 15}),
+            'billing_address': forms.Textarea(attrs={'rows': 4, 'cols': 15})
         }
 
     
@@ -80,8 +84,10 @@ class CustomerForm(forms.ModelForm, BootstrapMixin):
                     ),
                     'website',
                     'phone_2',
-                    'photo',
-                    'logo',
+                    Row(
+                        Column('photo', css_class="col-sm-12 col-md-6"),
+                        Column('logo', css_class="col-sm-12 col-md-6")
+                    ),
                     'tax_id',
                     HTML('''<hr>
                     <h5>Other Details</h5>'''),
