@@ -7,7 +7,7 @@ import GroupChatRoot from '../js/messaging/container/group_root';
 import EmailEditor from '../js/messaging/container/rich_text';
 import InboxView from '../js/messaging/container/inbox';
 import MultipleSelectWidget from '../js/src/multiple_select/containers/root';
-import SearchableWidget from '../js/src/components/searchable_widget';
+import SelectThree from '../js/src/select_3';
 import FilePicker from '../js/src/components/custom_file_picker';
 
 const rich_text = document.getElementById('message-field');
@@ -45,20 +45,16 @@ if(threadView){
         return data.to
     }
     
-    ReactDOM.render(<SearchableWidget
-                        prePopulatedURL={prePopulatedURL}
-                        prePopulationHandler={toprePopulatedHandler} 
-                        newLink="/messaging/create-email-address"
-                        dataURL="/messaging/api/email-address"
-                        displayField="address"
-                        widgetID="to"
+    ReactDOM.render(<SelectThree
+                        app="messaging"
+                        model="emailaddress"
                         onSelect={(value) => {
-                            document.getElementById('id_to').value = value;
+                            document.getElementById('id_to').value = value.selected;
                         }}
                         onClear={() =>{
                             document.getElementById('id_to').value = "";
                         }}
-                        idField="id"/>, toWidget)
+                        />, toWidget)
     ReactDOM.render(<MultipleSelectWidget
                         populatedURL={prePopulatedURL}
                         resProcessor={(res) => res.data.copy}

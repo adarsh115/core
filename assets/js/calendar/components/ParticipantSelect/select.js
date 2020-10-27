@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import SearchableWidget from '../../../src/components/searchable_widget';
+import SelectThree from '../../../src/select_3';
 import $ from 'jquery';
 import axios from '../../../src/auth';
 import {DeleteButton} from "../../../src/common";
@@ -123,10 +123,9 @@ class ParticipantEntry extends Component{
         this.setState({selected: {}});
     }
 
-    onSelectHandler = (str) =>{
-        let pk = null;
-        let name = null;
-        [pk, name] = str.split('-');
+    onSelectHandler = (val) =>{
+        const pk = val.selected;
+        let name = val.inputVal;
         this.setState({selected: {
             type: this.state.selecting,
             pk: pk,
@@ -140,35 +139,29 @@ class ParticipantEntry extends Component{
             switch(this.state.selecting){
                 case 'employee':
                     widgetSelector = <div>
-                    <SearchableWidget 
-                    list={this.props.dataList}
-                    dataURL="/employees/api/employee/"
-                    idField="employee_number"
-                    displayField="first_name" //change to full name
-                    onClear={this.onClearHandler}
-                    onSelect={this.onSelectHandler} />
+                    <SelectThree
+                        app="employees"
+                        model="employee"
+                        onClear={this.onClearHandler}
+                        onSelect={this.onSelectHandler} />
                     </div>
                     break;
                 case 'customer': 
                     widgetSelector = <div>
-                    <SearchableWidget
-                    list={this.props.dataList}
-                    dataURL="/invoicing/api/customer/"
-                    idField="id"
-                    displayField="name"
-                    onClear={this.onClearHandler}
-                    onSelect={this.onSelectHandler} />
+                    <SelectThree
+                        app="invoicing"
+                        model="customer"
+                        onClear={this.onClearHandler}
+                        onSelect={this.onSelectHandler} />
                     </div>
                     break;
                 case 'supplier': //supplier
                     widgetSelector = <div>
-                    <SearchableWidget 
-                    list={this.props.dataList}
-                    dataURL="/inventory/api/supplier/"
-                    idField="id"
-                    displayField="name"
-                    onClear={this.onClearHandler}
-                    onSelect={this.onSelectHandler} />
+                    <SelectThree 
+                        app="inventory"
+                        model="supplier"
+                        onClear={this.onClearHandler}
+                        onSelect={this.onSelectHandler} />
                     </div>
                     break;
                 default:

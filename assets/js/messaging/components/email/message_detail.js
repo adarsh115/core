@@ -3,7 +3,7 @@ import ReplyWidget from "./reply_widget";
 import axios from "../../../src/auth";
 import { Aux } from "../../../src/common";
 import ReactModal from "react-modal";
-import SearchableWidget from "../../../src/components/searchable_widget";
+import SelectThree from "../../../src/select_3";
 import MultipleSelectWidget from "../../../src/multiple_select/containers/root";
 
 class MessageDetail extends Component {
@@ -255,17 +255,15 @@ class MessageDetail extends Component {
 
           <div>
             <p>To:</p>
-            <SearchableWidget
+            <SelectThree
               onSelect={value => {
-                this.setState({ forwardTo: value });
+                this.setState({ forwardTo: value.selected });
               }}
               onClear={() => {
                 this.setState({ forwardTo: "" });
               }}
-              newLink="/messaging/create-email-address"
-              dataURL="/messaging/api/email-address"
-              displayField="address"
-              idField="id"
+              model="EmailAddress"
+              app="messaging"
             />
             <p>Cc:</p>
             <MultipleSelectWidget

@@ -245,7 +245,7 @@ class StockReceiptCreateView(CreateView):
             if n == 0:
                 break
             if line['receiving_location'] != "":
-                medium = line['receiving_location'].split('-')[0]
+                medium = line['receiving_location']
                 item = models.OrderItem.objects.get(pk=pk)
                 item.receive(n, medium=medium, receipt=self.object)
             else:

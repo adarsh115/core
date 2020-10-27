@@ -208,5 +208,5 @@ class ImgPreview extends Component{
         )
     }
 }
-//SearchableWidget
+
 export {DeleteButton, Totals, AsyncSelect, ImgPreview};

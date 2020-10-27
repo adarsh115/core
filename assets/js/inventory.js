@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
 import GenericTable from './src/generic_list/containers/root';
 import MutableTable from './src/mutable_table/container/root';
-import SearchableWidget from './src/components/searchable_widget';
+import SelectThree from './src/select_3';
 import SelectWidget from './src/components/select';
 
 
@@ -91,9 +91,9 @@ if(inventoryCheck){
                     name: 'item',
                     type: 'search',
                     width:40,
-                    'model': 'inventoryitem',
-                    'app': 'inventory',
-                    'newLink': '/inventory/product-create',
+                    model: 'inventoryitem',
+                    app: 'inventory',
+                    newLink: '/inventory/product-create',
                     url: '/inventory/api/product/', 
                     idField: 'id',
                     displayField: 'name',
@@ -156,7 +156,7 @@ if(inventoryCheck){
                     const handler = (val) =>{
                         let newData = [...comp.state.data];
                         let newRow = {...comp.state.data[rowID]};
-                        newRow['receiving_location'] = val;
+                        newRow['receiving_location'] = val.selected;
                         newData[rowID] = newRow;
                         comp.setState({'data': newData}, comp.updateForm)
                     }
@@ -170,13 +170,11 @@ if(inventoryCheck){
                     }
 
                     
-                    return(<SearchableWidget 
-                        bordered
-                        dataURL={`/inventory/api/storage-media/${wh}`}
-                        idField="id"
-                        displayField="name"
-                        onSelect={handler}
-                        onClear={clearHandler}/>)
+                    return(<SelectThree 
+                                app="inventory"
+                                model="storagemedia"
+                                onSelect={handler}
+                                onClear={clearHandler}/>)
                 }
             } 
             
@@ -194,6 +192,8 @@ if(inventoryCheck){
             {
                 name: 'item',
                 type: 'search',
+                model: 'inventoryitem',
+                app: 'inventory',
                 width: 45,
                 url: '/inventory/api/inventory-item/', 
                 idField: 'id',
@@ -220,6 +220,8 @@ if(inventoryCheck){
             {
                 name: 'item',
                 type: 'search',
+                model: 'inventoryitem',
+                app: 'inventory',
                 width: 25,
                 url: '/inventory/api/inventory-item/', //will get all inventory soon
                 idField: 'id',
@@ -300,11 +302,9 @@ if(inventoryCheck){
                             newData[rowID] = newRow;
                             comp.setState({'data': newData}, comp.updateForm)
                         }
-                        return(<SearchableWidget 
-                            bordered
-                            dataURL={`/inventory/api/storage-media/${wh}`}
-                            idField="id"
-                            displayField="name"
+                        return(<SelectThree 
+                            app='inventory'
+                            model='storagemedia'
                             onSelect={handler}
                             onClear={clearHandler}/>)
                     }
@@ -448,9 +448,9 @@ if(inventoryCheck){
                     name: 'item',
                     type: 'search',
                     width: 35,
-                    'model': 'inventoryitem',
-                    'app': 'inventory',
-                    'newLink': '/inventory/product-create',
+                    model: 'inventoryitem',
+                    app: 'inventory',
+                    newLink: '/inventory/product-create',
                     url: '/inventory/api/items-excluding-products/', 
                     idField: 'id',
                     displayField: 'name',

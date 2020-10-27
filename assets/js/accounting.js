@@ -1,6 +1,5 @@
 import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
-import TransactionTable from './accounting/compound_transaction';
 import CurrencyConverter from './accounting/currency/containers/root';
 import GenericTable from './src/generic_list/containers/root'
 import SelectWidget from './src/components/select';

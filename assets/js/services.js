@@ -80,8 +80,8 @@ if (consumableTable){
                 name: 'item',
                 type: 'search',
                 width: 25,
-                url: '/inventory/api/consumable/',                idField: 'id',
-                displayField: 'name',
+                model: 'inventoryitem',                
+                app: 'inventory',
                 required: true,
             },
             {
@@ -112,9 +112,8 @@ if (equipmentTable){
                 name: 'item',
                 type: 'search',
                 width: 30,
-                url: "/inventory/api/equipment/", 
-                idField: 'id',
-                displayField: 'name',
+                model: 'inventoryitem',
+                app: 'inventory',
                 required: true,
             },
             {
@@ -185,9 +184,8 @@ if(serviceTime){
             'name': 'employee',
             'type': 'search',
             'width': 25,
-            'url' :'/employees/api/employee',
-            'idField': 'employee_number',
-            'displayField': 'first_name',
+            'model': 'employee',
+            'app':'employees',
             'required': true
         },
         {

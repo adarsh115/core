@@ -4,6 +4,18 @@ import styles from './select_3.css';
 import Radium from 'radium';
 import QuickEntry from './quick_entry';
 import ReactDOM from 'react-dom';
+/**
+    Props
+    -------
+
+    toggleClear - bool
+    app - string
+    model - string
+    onClear - function
+    onSelect - function
+    initial - string (pk)
+
+ */
 class SelectThree extends Component {
     state = {
         inputVal: "",
