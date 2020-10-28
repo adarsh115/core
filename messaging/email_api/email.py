@@ -24,8 +24,9 @@ class EmailAgeException(Exception):
 class EmailSyncedException(Exception):
     pass
 
-class EmailBaseClass():
+class EmailBaseClass(EmailSMTP):
     def send_plaintext_email(self, to, message):
+        
         '''sends plain text email over tls.
         Args
         ======
@@ -321,14 +322,14 @@ class EmailBaseClass():
         for folder in self.profile.folders:
             mail.select(folder.label)
             try:
-                type, data = mail.search(None, 'ALL')
+                data = mail.search(None, 'ALL')
             except imaplib.IMAP4.error:
                 continue
             mail_ids = data[0].split()
             self.fetch_messages(mail, mail_ids, folder)
 
 
-class EmailSMTP(EmailBaseClass):
+class EmailSMTP():
 
     def __init__(self, profile):
         self.profile = profile
